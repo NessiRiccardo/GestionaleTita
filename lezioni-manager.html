@@ -499,6 +499,8 @@ function translateAuthError(msg) {
 }
 
 async function enterApp() {
+  // Nascondi esplicitamente il login
+  document.getElementById('view-login').classList.remove('active');
   document.getElementById('nav').style.display = 'flex';
   document.getElementById('settings-email').textContent = currentUser.email;
   await loadData();
@@ -546,6 +548,8 @@ function showView(name, data) {
     return;
   }
 
+  // Assicurati che il login sia sempre nascosto
+  document.getElementById('view-login').classList.remove('active');
   navEl.style.display = 'flex';
 
   if (['clienti','scanner','settings'].includes(name)) {
