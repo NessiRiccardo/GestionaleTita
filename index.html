@@ -187,28 +187,52 @@ select option { background: #1a1a1a; }
   </div>
 
   <!-- LOGIN SCREEN - fuori dal main, overlay fullscreen -->
-  <div id="view-login" style="position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto;padding:20px 20px calc(20px + var(--safe-bottom));display:flex;flex-direction:column;justify-content:center;">
-      <div class="login-logo">
-        <h1>LEZIONI MANAGER</h1>
-        <p>Accedi per continuare</p>
+  <div id="view-login" style="position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto;padding:20px;display:flex;flex-direction:column;justify-content:center;">
+    <div style="max-width:400px;width:100%;margin:0 auto;">
+      <div style="text-align:center;margin-bottom:40px;">
+        <div style="font-family:var(--font);font-size:22px;color:var(--accent);letter-spacing:0.15em;">LEZIONI MANAGER</div>
+        <div style="font-size:13px;color:var(--text3);margin-top:6px;">Accedi per continuare</div>
       </div>
+
       <div class="login-tabs">
         <button class="login-tab active" id="tab-login" onclick="switchAuthTab('login')">Accedi</button>
         <button class="login-tab" id="tab-register" onclick="switchAuthTab('register')">Registrati</button>
       </div>
+
       <div class="form-group">
         <label>Email</label>
         <input type="email" id="auth-email" placeholder="tua@email.com" autocomplete="email">
       </div>
+
       <div class="form-group">
         <label>Password</label>
-        <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password">
+        <div style="position:relative;">
+          <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" style="padding-right:48px;">
+          <button onclick="togglePwd('auth-password','eye1')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;" id="eye1">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
       </div>
-      <div id="auth-error" style="color:var(--red);font-size:13px;margin-bottom:12px;display:none;"></div>
+
+      <div class="form-group" id="pwd-confirm-group" style="display:none;">
+        <label>Conferma password</label>
+        <div style="position:relative;">
+          <input type="password" id="auth-password2" placeholder="••••••••" style="padding-right:48px;">
+          <button onclick="togglePwd('auth-password2','eye2')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;" id="eye2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div id="auth-error" style="color:var(--red);font-size:13px;margin-bottom:12px;display:none;padding:10px 14px;background:rgba(255,68,68,0.1);border-radius:var(--radius);border:1px solid rgba(255,68,68,0.2);"></div>
+      <div id="auth-success" style="color:var(--green);font-size:13px;margin-bottom:12px;display:none;padding:10px 14px;background:rgba(48,209,88,0.1);border-radius:var(--radius);border:1px solid rgba(48,209,88,0.2);"></div>
+
       <button class="btn btn-primary" id="auth-btn" onclick="handleAuth()">Accedi</button>
-      <div style="text-align:center;margin-top:16px;">
+
+      <div id="reset-link" style="text-align:center;margin-top:16px;">
         <button onclick="handleResetPassword()" style="background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--font2);">Password dimenticata?</button>
       </div>
+    </div>
   </div><!-- end view-login -->
 
   <div id="main">
@@ -250,8 +274,8 @@ select option { background: #1a1a1a; }
     <div id="view-settings" class="view">
       <div class="section-title">Dati</div>
       <div class="settings-section">
-        <div class="settings-row" onclick="esportaCSV()">
-          <div><div class="settings-row-label">Esporta Report CSV</div><div class="settings-row-sub">Tutte le lezioni, apribile in Excel</div></div>
+        <div class="settings-row" onclick="openExportModal()">
+          <div><div class="settings-row-label">Esporta Report Lezioni</div><div class="settings-row-sub">Filtra per cliente e range di date</div></div>
           <span class="settings-row-arrow">↓</span>
         </div>
         <div class="settings-row" onclick="esportaClientiCSV()">
@@ -356,6 +380,33 @@ select option { background: #1a1a1a; }
   </div>
 </div>
 
+<!-- MODAL: EXPORT -->
+<div class="modal-bg" id="modal-export">
+  <div class="modal">
+    <div class="modal-title">
+      <span>Esporta Report</span>
+      <button class="modal-close" onclick="closeModal('modal-export')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Cliente</label>
+      <select id="exp-cliente">
+        <option value="">Tutti i clienti</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Data inizio</label>
+      <input type="date" id="exp-from">
+    </div>
+    <div class="form-group">
+      <label>Data fine</label>
+      <input type="date" id="exp-to">
+    </div>
+    <div style="margin-top:20px;">
+      <button class="btn btn-primary" onclick="esportaCSVFiltrato()">Esporta CSV</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: CONFIRM -->
 <div class="modal-bg" id="modal-confirm">
   <div class="modal">
@@ -421,16 +472,33 @@ function switchAuthTab(mode) {
   document.getElementById('tab-login').classList.toggle('active', mode === 'login');
   document.getElementById('tab-register').classList.toggle('active', mode === 'register');
   document.getElementById('auth-btn').textContent = mode === 'login' ? 'Accedi' : 'Registrati';
+  document.getElementById('pwd-confirm-group').style.display = mode === 'register' ? 'block' : 'none';
+  document.getElementById('reset-link').style.display = mode === 'login' ? 'block' : 'none';
   document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('auth-success').style.display = 'none';
+}
+
+function togglePwd(inputId, btnId) {
+  const input = document.getElementById(inputId);
+  const isText = input.type === 'text';
+  input.type = isText ? 'password' : 'text';
+  document.getElementById(btnId).style.color = isText ? 'var(--text2)' : 'var(--accent)';
 }
 
 async function handleAuth() {
   const email = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
-  const errEl = document.getElementById('auth-error');
   const btn = document.getElementById('auth-btn');
 
+  hideAuthMessages();
+
   if (!email || !password) { showAuthError('Compila tutti i campi'); return; }
+  if (password.length < 6) { showAuthError('La password deve essere di almeno 6 caratteri'); return; }
+
+  if (authMode === 'register') {
+    const password2 = document.getElementById('auth-password2').value;
+    if (password !== password2) { showAuthError('Le password non coincidono'); return; }
+  }
 
   btn.textContent = '...';
   btn.disabled = true;
@@ -439,7 +507,7 @@ async function handleAuth() {
   if (authMode === 'login') {
     result = await sb.auth.signInWithPassword({ email, password });
   } else {
-    result = await sb.auth.signUp({ email, password });
+    result = await sb.auth.signUp({ email, password, options: { data: {} } });
   }
 
   btn.disabled = false;
@@ -450,15 +518,18 @@ async function handleAuth() {
     return;
   }
 
-  // Su Safari mobile result.data.session può essere null dopo signUp
-  // Forziamo getSession come fallback
   let session = result.data.session;
   if (!session) {
     const { data } = await sb.auth.getSession();
     session = data.session;
   }
   if (!session) {
-    showAuthError('Sessione non disponibile. Riprova.');
+    if (authMode === 'register') {
+      showAuthSuccess('Registrazione completata! Ora accedi con le tue credenziali.');
+      switchAuthTab('login');
+    } else {
+      showAuthError('Sessione non disponibile. Riprova.');
+    }
     return;
   }
 
@@ -471,33 +542,36 @@ async function handleResetPassword() {
   if (!email) { showAuthError('Inserisci la tua email prima'); return; }
   const { error } = await sb.auth.resetPasswordForEmail(email);
   if (error) { showAuthError(translateAuthError(error.message)); return; }
-  toast('Email di recupero inviata ✓');
+  showAuthSuccess('Email di recupero inviata. Controlla la tua casella.');
 }
 
-async function handleLogout() {
-  await sb.auth.signOut();
-  currentUser = null;
-  clientiCache = [];
-  lezioniCache = [];
-  stopScanner();
-  showView('login');
-  document.getElementById('nav').style.display = 'none';
-  document.getElementById('header-subtitle').textContent = '–';
-  document.getElementById('header-actions').innerHTML = '';
+function hideAuthMessages() {
+  document.getElementById('auth-error').style.display = 'none';
+  document.getElementById('auth-success').style.display = 'none';
 }
 
 function showAuthError(msg) {
   const el = document.getElementById('auth-error');
   el.textContent = msg;
   el.style.display = 'block';
+  document.getElementById('auth-success').style.display = 'none';
+}
+
+function showAuthSuccess(msg) {
+  const el = document.getElementById('auth-success');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('auth-error').style.display = 'none';
 }
 
 function translateAuthError(msg) {
-  if (msg.includes('Invalid login')) return 'Email o password errati';
-  if (msg.includes('Email not confirmed')) return 'Conferma la tua email';
-  if (msg.includes('already registered')) return 'Email già registrata';
-  if (msg.includes('Password should')) return 'Password troppo corta (min 6 caratteri)';
-  return msg;
+  if (msg.includes('Invalid login') || msg.includes('invalid_credentials')) return 'Email o password errati';
+  if (msg.includes('Email not confirmed')) return 'Email non confermata. Contatta l\'amministratore.';
+  if (msg.includes('already registered') || msg.includes('already been registered')) return 'Email già registrata. Usa Accedi.';
+  if (msg.includes('Password should') || msg.includes('weak_password')) return 'Password troppo corta (minimo 6 caratteri)';
+  if (msg.includes('rate limit') || msg.includes('Rate limit') || msg.includes('over_email_send_rate_limit')) return 'Troppi tentativi. Aspetta qualche minuto e riprova.';
+  if (msg.includes('Unable to validate') || msg.includes('invalid email')) return 'Email non valida';
+  return 'Errore: ' + msg;
 }
 
 async function enterApp() {
@@ -626,6 +700,7 @@ function renderClienteDetail(id) {
   const totFatte = lezioni.length;
 
   let carnetSection = '';
+  const questoMese = lezioni.filter(l => isSameMonth(l.ts)).length;
   if (c.carnet_on) {
     const rimaste = c.carnet_tot - totFatte;
     const pct = Math.min(100, (totFatte / c.carnet_tot) * 100);
@@ -635,6 +710,8 @@ function renderClienteDetail(id) {
       <div class="stat-grid">
         <div class="stat-box"><div class="stat-num">${totFatte}</div><div class="stat-label">Fatte</div></div>
         <div class="stat-box"><div class="stat-num" style="color:${color}">${Math.max(0,rimaste)}</div><div class="stat-label">Rimaste</div></div>
+        <div class="stat-box"><div class="stat-num">${c.carnet_tot}</div><div class="stat-label">Totale carnet</div></div>
+        <div class="stat-box"><div class="stat-num">${questoMese}</div><div class="stat-label">Questo mese</div></div>
       </div>
       <div class="carnet-bar" style="height:8px;margin-bottom:16px;">
         <div class="carnet-fill" style="width:${pct}%;background:${color}"></div>
@@ -643,7 +720,7 @@ function renderClienteDetail(id) {
     carnetSection = `<div class="section-title">Lezioni</div>
       <div class="stat-grid">
         <div class="stat-box"><div class="stat-num">${totFatte}</div><div class="stat-label">Totale</div></div>
-        <div class="stat-box"><div class="stat-num">${lezioni.filter(l=>isSameMonth(l.ts)).length}</div><div class="stat-label">Questo mese</div></div>
+        <div class="stat-box"><div class="stat-num">${questoMese}</div><div class="stat-label">Questo mese</div></div>
       </div>`;
   }
 
@@ -658,7 +735,8 @@ function renderClienteDetail(id) {
     <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:16px;font-family:var(--font);">${c.id}</div>
     <div class="btn-row" style="margin-bottom:24px;">
       <button class="btn btn-secondary btn-sm" onclick="openModalModifica('${id}')">Modifica</button>
-      <button class="btn btn-secondary btn-sm" onclick="downloadQR('${qrId}','${esc(c.nome)}')">Salva QR</button>
+      <button class="btn btn-secondary btn-sm" onclick="downloadQR('${qrId}','${esc(c.nome)}')">Condividi QR</button>
+      <button class="btn btn-secondary btn-sm" onclick="openExportModal('${id}')">Esporta</button>
       <button class="btn btn-danger btn-sm" onclick="confirmDelete('${id}')">Elimina</button>
     </div>
     ${carnetSection}
@@ -672,12 +750,27 @@ function renderClienteDetail(id) {
   }, 50);
 }
 
-function downloadQR(qrId, nome) {
+async function downloadQR(qrId, nome) {
   const canvas = document.querySelector('#' + qrId + ' canvas');
   if (!canvas) { toast('QR non trovato'); return; }
+  const dataUrl = canvas.toDataURL('image/png');
+  const filename = 'qr-' + nome.replace(/\s+/g,'_') + '.png';
+
+  // Prova Web Share API (mobile)
+  if (navigator.share && navigator.canShare) {
+    try {
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], filename, { type: 'image/png' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'QR ' + nome });
+        return;
+      }
+    } catch(e) { /* fallback */ }
+  }
+  // Fallback: download
   const a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png');
-  a.download = 'qr-' + nome.replace(/\s+/g,'_') + '.png';
+  a.href = dataUrl;
+  a.download = filename;
   a.click();
   toast('QR salvato');
 }
@@ -857,6 +950,65 @@ async function esportaCSV() {
     rows.push([l.id, c.nome, c.tel||'', d.toLocaleDateString('it-IT'), d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}), c.carnet_on?c.carnet_tot:'', c.carnet_on?lezioniC:'', c.carnet_on?Math.max(0,c.carnet_tot-lezioniC):'', l.note||'']);
   });
   downloadCSV(rows, 'lezioni-report-' + dateTag() + '.csv');
+  toast('CSV esportato');
+}
+
+function openExportModal(clienteId) {
+  // Popola select clienti
+  const sel = document.getElementById('exp-cliente');
+  sel.innerHTML = '<option value="">Tutti i clienti</option>';
+  clientiCache.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.nome;
+    if (clienteId && c.id === clienteId) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  // Default range: primo giorno mese corrente → oggi
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  document.getElementById('exp-from').value = firstDay.toISOString().slice(0,10);
+  document.getElementById('exp-to').value = now.toISOString().slice(0,10);
+  openModal('modal-export');
+}
+
+async function esportaCSVFiltrato() {
+  const clienteId = document.getElementById('exp-cliente').value;
+  const fromVal = document.getElementById('exp-from').value;
+  const toVal = document.getElementById('exp-to').value;
+
+  const from = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+  const to = toVal ? new Date(toVal + 'T23:59:59') : null;
+
+  let lezioni = [...lezioniCache].sort((a,b) => new Date(a.ts) - new Date(b.ts));
+  if (clienteId) lezioni = lezioni.filter(l => l.cliente_id === clienteId);
+  if (from) lezioni = lezioni.filter(l => new Date(l.ts) >= from);
+  if (to) lezioni = lezioni.filter(l => new Date(l.ts) <= to);
+
+  if (lezioni.length === 0) { toast('Nessuna lezione nel periodo'); return; }
+
+  const rows = [['Cliente','Telefono','Data','Ora','Carnet Tot','Lezioni Fatte','Rimaste','Note']];
+  lezioni.forEach(l => {
+    const c = clientiCache.find(x => x.id === l.cliente_id);
+    if (!c) return;
+    const lezioniFinoAd = lezioniCache.filter(x => x.cliente_id === c.id && new Date(x.ts) <= new Date(l.ts)).length;
+    const d = new Date(l.ts);
+    rows.push([
+      c.nome, c.tel||'',
+      d.toLocaleDateString('it-IT'),
+      d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}),
+      c.carnet_on ? c.carnet_tot : '',
+      c.carnet_on ? lezioniFinoAd : '',
+      c.carnet_on ? Math.max(0, c.carnet_tot - lezioniFinoAd) : '',
+      l.note||''
+    ]);
+  });
+
+  const nomeFile = clienteId
+    ? 'lezioni-' + (clientiCache.find(x=>x.id===clienteId)?.nome||'cliente').replace(/\s+/g,'_') + '-' + dateTag()
+    : 'lezioni-tutti-' + dateTag();
+  downloadCSV(rows, nomeFile + '.csv');
+  closeModal('modal-export');
   toast('CSV esportato');
 }
 
