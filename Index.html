@@ -501,7 +501,12 @@ function translateAuthError(msg) {
 
 async function enterApp() {
   // Nascondi esplicitamente il login
-  document.getElementById('view-login').classList.remove('active');
+  const loginEl = document.getElementById('view-login');
+  loginEl.classList.remove('active');
+  loginEl.style.display = 'none';
+  loginEl.style.visibility = 'hidden';
+  loginEl.style.height = '0';
+  loginEl.style.overflow = 'hidden';
   document.getElementById('nav').style.display = 'flex';
   document.getElementById('settings-email').textContent = currentUser.email;
   await loadData();
@@ -545,7 +550,12 @@ function showView(name, data) {
 
   if (name === 'login') {
     navEl.style.display = 'none';
-    document.getElementById('view-login').classList.add('active');
+    const loginEl = document.getElementById('view-login');
+    loginEl.style.display = '';
+    loginEl.style.visibility = '';
+    loginEl.style.height = '';
+    loginEl.style.overflow = '';
+    loginEl.classList.add('active');
     return;
   }
 
