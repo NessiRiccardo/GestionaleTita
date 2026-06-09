@@ -45,7 +45,7 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 /* ── VIEWS ── */
 .view { display: none; }
 .view.active { display: block; }
-#view-login.active { display: flex; }
+
 
 /* ── LOGIN ── */
 #view-login { flex-direction: column; justify-content: center; min-height: calc(100dvh - 120px); }
@@ -186,9 +186,8 @@ select option { background: #1a1a1a; }
     <div class="header-actions" id="header-actions"></div>
   </div>
 
-  <div id="main">
-    <!-- LOGIN -->
-    <div id="view-login" class="view active">
+  <!-- LOGIN SCREEN - fuori dal main, overlay fullscreen -->
+  <div id="view-login" style="position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto;padding:20px 20px calc(20px + var(--safe-bottom));display:flex;flex-direction:column;justify-content:center;">
       <div class="login-logo">
         <h1>LEZIONI MANAGER</h1>
         <p>Accedi per continuare</p>
@@ -210,8 +209,9 @@ select option { background: #1a1a1a; }
       <div style="text-align:center;margin-top:16px;">
         <button onclick="handleResetPassword()" style="background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--font2);">Password dimenticata?</button>
       </div>
-    </div>
+  </div><!-- end view-login -->
 
+  <div id="main">
     <!-- CLIENTI -->
     <div id="view-clienti" class="view">
       <input type="search" class="search-input" placeholder="Cerca cliente…" id="search-clienti" oninput="renderClienti()">
@@ -250,8 +250,8 @@ select option { background: #1a1a1a; }
     <div id="view-settings" class="view">
       <div class="section-title">Dati</div>
       <div class="settings-section">
-        <div class="settings-row" onclick="esportaCSV()">
-          <div><div class="settings-row-label">Esporta Report CSV</div><div class="settings-row-sub">Tutte le lezioni, apribile in Excel</div></div>
+        <div class="settings-row" onclick="openExportModal()">
+          <div><div class="settings-row-label">Esporta Report Lezioni</div><div class="settings-row-sub">Filtra per cliente e range di date</div></div>
           <span class="settings-row-arrow">↓</span>
         </div>
         <div class="settings-row" onclick="esportaClientiCSV()">
@@ -356,6 +356,33 @@ select option { background: #1a1a1a; }
   </div>
 </div>
 
+<!-- MODAL: EXPORT -->
+<div class="modal-bg" id="modal-export">
+  <div class="modal">
+    <div class="modal-title">
+      <span>Esporta Report</span>
+      <button class="modal-close" onclick="closeModal('modal-export')">✕</button>
+    </div>
+    <div class="form-group">
+      <label>Cliente</label>
+      <select id="exp-cliente">
+        <option value="">Tutti i clienti</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Data inizio</label>
+      <input type="date" id="exp-from">
+    </div>
+    <div class="form-group">
+      <label>Data fine</label>
+      <input type="date" id="exp-to">
+    </div>
+    <div style="margin-top:20px;">
+      <button class="btn btn-primary" onclick="esportaCSVFiltrato()">Esporta CSV</button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: CONFIRM -->
 <div class="modal-bg" id="modal-confirm">
   <div class="modal">
@@ -398,9 +425,10 @@ async function init() {
   document.getElementById('app').style.display = 'flex';
   if (session) {
     currentUser = session.user;
+    document.getElementById('view-login').style.display = 'none';
     await enterApp();
   } else {
-    showView('login');
+    document.getElementById('view-login').style.display = 'flex';
   }
 }
 
@@ -500,13 +528,8 @@ function translateAuthError(msg) {
 }
 
 async function enterApp() {
-  // Nascondi esplicitamente il login
-  const loginEl = document.getElementById('view-login');
-  loginEl.classList.remove('active');
-  loginEl.style.display = 'none';
-  loginEl.style.visibility = 'hidden';
-  loginEl.style.height = '0';
-  loginEl.style.overflow = 'hidden';
+  // Nascondi l'overlay di login
+  document.getElementById('view-login').style.display = 'none';
   document.getElementById('nav').style.display = 'flex';
   document.getElementById('settings-email').textContent = currentUser.email;
   await loadData();
@@ -550,12 +573,7 @@ function showView(name, data) {
 
   if (name === 'login') {
     navEl.style.display = 'none';
-    const loginEl = document.getElementById('view-login');
-    loginEl.style.display = '';
-    loginEl.style.visibility = '';
-    loginEl.style.height = '';
-    loginEl.style.overflow = '';
-    loginEl.classList.add('active');
+    document.getElementById('view-login').style.display = 'flex';
     return;
   }
 
@@ -635,6 +653,7 @@ function renderClienteDetail(id) {
   const totFatte = lezioni.length;
 
   let carnetSection = '';
+  const questoMese = lezioni.filter(l => isSameMonth(l.ts)).length;
   if (c.carnet_on) {
     const rimaste = c.carnet_tot - totFatte;
     const pct = Math.min(100, (totFatte / c.carnet_tot) * 100);
@@ -644,6 +663,8 @@ function renderClienteDetail(id) {
       <div class="stat-grid">
         <div class="stat-box"><div class="stat-num">${totFatte}</div><div class="stat-label">Fatte</div></div>
         <div class="stat-box"><div class="stat-num" style="color:${color}">${Math.max(0,rimaste)}</div><div class="stat-label">Rimaste</div></div>
+        <div class="stat-box"><div class="stat-num">${c.carnet_tot}</div><div class="stat-label">Totale carnet</div></div>
+        <div class="stat-box"><div class="stat-num">${questoMese}</div><div class="stat-label">Questo mese</div></div>
       </div>
       <div class="carnet-bar" style="height:8px;margin-bottom:16px;">
         <div class="carnet-fill" style="width:${pct}%;background:${color}"></div>
@@ -652,7 +673,7 @@ function renderClienteDetail(id) {
     carnetSection = `<div class="section-title">Lezioni</div>
       <div class="stat-grid">
         <div class="stat-box"><div class="stat-num">${totFatte}</div><div class="stat-label">Totale</div></div>
-        <div class="stat-box"><div class="stat-num">${lezioni.filter(l=>isSameMonth(l.ts)).length}</div><div class="stat-label">Questo mese</div></div>
+        <div class="stat-box"><div class="stat-num">${questoMese}</div><div class="stat-label">Questo mese</div></div>
       </div>`;
   }
 
@@ -667,7 +688,8 @@ function renderClienteDetail(id) {
     <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:16px;font-family:var(--font);">${c.id}</div>
     <div class="btn-row" style="margin-bottom:24px;">
       <button class="btn btn-secondary btn-sm" onclick="openModalModifica('${id}')">Modifica</button>
-      <button class="btn btn-secondary btn-sm" onclick="downloadQR('${qrId}','${esc(c.nome)}')">Salva QR</button>
+      <button class="btn btn-secondary btn-sm" onclick="downloadQR('${qrId}','${esc(c.nome)}')">Condividi QR</button>
+      <button class="btn btn-secondary btn-sm" onclick="openExportModal('${id}')">Esporta</button>
       <button class="btn btn-danger btn-sm" onclick="confirmDelete('${id}')">Elimina</button>
     </div>
     ${carnetSection}
@@ -681,12 +703,27 @@ function renderClienteDetail(id) {
   }, 50);
 }
 
-function downloadQR(qrId, nome) {
+async function downloadQR(qrId, nome) {
   const canvas = document.querySelector('#' + qrId + ' canvas');
   if (!canvas) { toast('QR non trovato'); return; }
+  const dataUrl = canvas.toDataURL('image/png');
+  const filename = 'qr-' + nome.replace(/\s+/g,'_') + '.png';
+
+  // Prova Web Share API (mobile)
+  if (navigator.share && navigator.canShare) {
+    try {
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], filename, { type: 'image/png' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: 'QR ' + nome });
+        return;
+      }
+    } catch(e) { /* fallback */ }
+  }
+  // Fallback: download
   const a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png');
-  a.download = 'qr-' + nome.replace(/\s+/g,'_') + '.png';
+  a.href = dataUrl;
+  a.download = filename;
   a.click();
   toast('QR salvato');
 }
@@ -866,6 +903,65 @@ async function esportaCSV() {
     rows.push([l.id, c.nome, c.tel||'', d.toLocaleDateString('it-IT'), d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}), c.carnet_on?c.carnet_tot:'', c.carnet_on?lezioniC:'', c.carnet_on?Math.max(0,c.carnet_tot-lezioniC):'', l.note||'']);
   });
   downloadCSV(rows, 'lezioni-report-' + dateTag() + '.csv');
+  toast('CSV esportato');
+}
+
+function openExportModal(clienteId) {
+  // Popola select clienti
+  const sel = document.getElementById('exp-cliente');
+  sel.innerHTML = '<option value="">Tutti i clienti</option>';
+  clientiCache.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.nome;
+    if (clienteId && c.id === clienteId) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  // Default range: primo giorno mese corrente → oggi
+  const now = new Date();
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+  document.getElementById('exp-from').value = firstDay.toISOString().slice(0,10);
+  document.getElementById('exp-to').value = now.toISOString().slice(0,10);
+  openModal('modal-export');
+}
+
+async function esportaCSVFiltrato() {
+  const clienteId = document.getElementById('exp-cliente').value;
+  const fromVal = document.getElementById('exp-from').value;
+  const toVal = document.getElementById('exp-to').value;
+
+  const from = fromVal ? new Date(fromVal + 'T00:00:00') : null;
+  const to = toVal ? new Date(toVal + 'T23:59:59') : null;
+
+  let lezioni = [...lezioniCache].sort((a,b) => new Date(a.ts) - new Date(b.ts));
+  if (clienteId) lezioni = lezioni.filter(l => l.cliente_id === clienteId);
+  if (from) lezioni = lezioni.filter(l => new Date(l.ts) >= from);
+  if (to) lezioni = lezioni.filter(l => new Date(l.ts) <= to);
+
+  if (lezioni.length === 0) { toast('Nessuna lezione nel periodo'); return; }
+
+  const rows = [['Cliente','Telefono','Data','Ora','Carnet Tot','Lezioni Fatte','Rimaste','Note']];
+  lezioni.forEach(l => {
+    const c = clientiCache.find(x => x.id === l.cliente_id);
+    if (!c) return;
+    const lezioniFinoAd = lezioniCache.filter(x => x.cliente_id === c.id && new Date(x.ts) <= new Date(l.ts)).length;
+    const d = new Date(l.ts);
+    rows.push([
+      c.nome, c.tel||'',
+      d.toLocaleDateString('it-IT'),
+      d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}),
+      c.carnet_on ? c.carnet_tot : '',
+      c.carnet_on ? lezioniFinoAd : '',
+      c.carnet_on ? Math.max(0, c.carnet_tot - lezioniFinoAd) : '',
+      l.note||''
+    ]);
+  });
+
+  const nomeFile = clienteId
+    ? 'lezioni-' + (clientiCache.find(x=>x.id===clienteId)?.nome||'cliente').replace(/\s+/g,'_') + '-' + dateTag()
+    : 'lezioni-tutti-' + dateTag();
+  downloadCSV(rows, nomeFile + '.csv');
+  closeModal('modal-export');
   toast('CSV esportato');
 }
 
