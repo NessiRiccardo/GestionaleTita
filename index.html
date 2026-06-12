@@ -359,7 +359,12 @@ async function init() {
 }
 
 function showLogin() { document.getElementById('view-login').style.display = 'flex'; document.getElementById('nav').style.display = 'none'; }
-function hideLogin() { document.getElementById('view-login').style.display = 'none'; }
+function hideLogin() {
+  const el = document.getElementById('view-login');
+  console.log('hideLogin: element:', el, 'current display:', el ? el.style.display : 'NULL');
+  if (el) { el.style.display = 'none'; el.style.visibility = 'hidden'; el.style.pointerEvents = 'none'; el.style.zIndex = '-1'; }
+  console.log('hideLogin: after:', el ? el.style.display : 'NULL');
+}
 
 // ── AUTH ──
 let authMode = 'login';
