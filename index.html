@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#0a0a0a">
 <title>Lezioni Manager</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
@@ -245,9 +245,17 @@ select option { background: #1a1a1a; }
     <!-- SCANNER -->
     <div id="view-scanner" class="view">
       <div class="section-title">Scansiona QR del cliente</div>
-      <div id="scanner-container">
-        <div id="reader"></div>
-        <div class="scan-overlay"><div class="scan-frame"><span></span></div></div>
+      <div id="scanner-container" style="position:relative;background:#000;border-radius:var(--radius);overflow:hidden;margin-bottom:12px;">
+        <video id="qr-video" autoplay playsinline muted style="width:100%;display:block;"></video>
+        <canvas id="qr-canvas" style="display:none;"></canvas>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+          <div style="width:200px;height:200px;position:relative;">
+            <div style="position:absolute;top:0;left:0;width:24px;height:24px;border-top:2px solid var(--accent);border-left:2px solid var(--accent);"></div>
+            <div style="position:absolute;top:0;right:0;width:24px;height:24px;border-top:2px solid var(--accent);border-right:2px solid var(--accent);"></div>
+            <div style="position:absolute;bottom:0;left:0;width:24px;height:24px;border-bottom:2px solid var(--accent);border-left:2px solid var(--accent);"></div>
+            <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-bottom:2px solid var(--accent);border-right:2px solid var(--accent);"></div>
+          </div>
+        </div>
       </div>
       <div id="scan-status" style="text-align:center;font-family:var(--font);font-size:12px;color:var(--text3);letter-spacing:0.08em;margin-bottom:12px;">AVVIO FOTOCAMERA...</div>
       <div id="scan-debug" style="font-family:var(--font);font-size:11px;color:var(--text3);background:var(--bg3);border-radius:var(--radius);padding:10px;margin-bottom:12px;min-height:40px;word-break:break-all;"></div>
@@ -791,39 +799,55 @@ function startScanner() {
   document.getElementById('scanner-container').style.display = '';
   scanClienteId = null;
 
-  // Calcola qrbox in base alla dimensione reale del container
-  const containerW = document.getElementById('scanner-container').offsetWidth || 320;
-  const boxSize = Math.floor(Math.min(containerW * 0.7, 250));
+  const video = document.getElementById('qr-video');
+  const status = document.getElementById('scan-status');
+  const dbg = document.getElementById('scan-debug');
 
-  scanner = new Html5Qrcode('reader');
-  const config = {
-    fps: 15,
-    disableFlip: false,
-    experimentalFeatures: { useBarCodeDetectorIfSupported: true }
-  };
+  navigator.mediaDevices.getUserMedia({
+    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+  }).then(stream => {
+    video.srcObject = stream;
+    video.play();
+    scannerActive = true;
+    if (status) status.textContent = 'PUNTA IL QR CODE VERSO LA FOTOCAMERA';
+    if (dbg) dbg.textContent = 'Scanner attivo. Clienti in cache: ' + clientiCache.length;
+    requestAnimationFrame(scanFrame);
+  }).catch(err => {
+    if (status) status.textContent = 'FOTOCAMERA NON DISPONIBILE';
+    if (dbg) dbg.textContent = err.message;
+  });
+}
 
-  scanner.start({ facingMode: 'environment' }, config, onScanSuccess, () => {})
-    .then(() => {
-      scannerActive = true;
-      const st = document.getElementById('scan-status');
-      if (st) st.textContent = 'PUNTA IL QR CODE VERSO LA FOTOCAMERA';
-      const dbg = document.getElementById('scan-debug');
-      if (dbg) dbg.textContent = 'Scanner attivo. Clienti in cache: ' + clientiCache.length;
-    })
-    .catch(() => {
-      // Fallback: prova senza vincoli fotocamera
-      scanner.start({ facingMode: 'user' }, config, onScanSuccess, () => {})
-        .then(() => { scannerActive = true; })
-        .catch(() => {
-          document.getElementById('scanner-container').innerHTML =
-            `<div style="padding:40px;text-align:center;color:var(--text2);font-size:13px;">Fotocamera non disponibile.<br>Verifica i permessi nel browser.</div>`;
-        });
-    });
+function scanFrame() {
+  if (!scannerActive) return;
+  const video = document.getElementById('qr-video');
+  const canvas = document.getElementById('qr-canvas');
+  if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) {
+    requestAnimationFrame(scanFrame);
+    return;
+  }
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+  if (code) {
+    onScanSuccess(code.data);
+  } else {
+    requestAnimationFrame(scanFrame);
+  }
 }
 
 function stopScanner() {
-  if (scanner && scannerActive) { scanner.stop().catch(() => {}); scannerActive = false; }
+  scannerActive = false;
+  const video = document.getElementById('qr-video');
+  if (video && video.srcObject) {
+    video.srcObject.getTracks().forEach(t => t.stop());
+    video.srcObject = null;
+  }
 }
+
 
 function onScanSuccess(decoded) {
   const dbg = document.getElementById('scan-debug');
@@ -865,7 +889,8 @@ function annullaScan() {
   scanClienteId = null;
   document.getElementById('scan-result').classList.remove('show');
   document.getElementById('scanner-container').style.display = '';
-  startScanner();
+  stopScanner();
+  setTimeout(startScanner, 200);
 }
 
 // ── MODAL CLIENTE ──
