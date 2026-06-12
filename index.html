@@ -405,8 +405,11 @@ async function handleAuth() {
     return;
   }
   currentUser = session.user;
+  console.log('Login OK, user:', currentUser.email);
   hideLogin();
+  console.log('hideLogin chiamato');
   await enterApp();
+  console.log('enterApp completato');
 }
 async function handleResetPassword() {
   const email = document.getElementById('auth-email').value.trim();
@@ -430,10 +433,14 @@ function translateAuthError(msg) {
 
 // ── ENTER APP ──
 async function enterApp() {
+  console.log('enterApp: start');
   document.getElementById('nav').style.display = 'flex';
   document.getElementById('settings-email').textContent = currentUser.email;
+  console.log('enterApp: loading data...');
   await loadData();
+  console.log('enterApp: data loaded, clienti:', clientiCache.length);
   showView('clienti');
+  console.log('enterApp: showView chiamato');
 }
 
 // ── DATA ──
