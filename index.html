@@ -804,24 +804,47 @@ function startScanner() {
   const dbg = document.getElementById('scan-debug');
 
   navigator.mediaDevices.getUserMedia({
-    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
   }).then(stream => {
     video.srcObject = stream;
     video.play();
     scannerActive = true;
     if (status) status.textContent = 'PUNTA IL QR CODE VERSO LA FOTOCAMERA';
-    if (dbg) dbg.textContent = 'Scanner attivo. Clienti in cache: ' + clientiCache.length;
-    requestAnimationFrame(scanFrame);
+    if (dbg) dbg.textContent = 'Scanner attivo. Clienti: ' + clientiCache.length;
+
+    if ('BarcodeDetector' in window) {
+      if (dbg) dbg.textContent += ' | BarcodeDetector: SI';
+      const detector = new BarcodeDetector({ formats: ['qr_code'] });
+      scanWithDetector(detector, video, dbg);
+    } else {
+      if (dbg) dbg.textContent += ' | BarcodeDetector: NO, uso jsQR';
+      requestAnimationFrame(scanFrame);
+    }
   }).catch(err => {
     if (status) status.textContent = 'FOTOCAMERA NON DISPONIBILE';
     if (dbg) dbg.textContent = err.message;
   });
 }
 
+async function scanWithDetector(detector, video, dbg) {
+  if (!scannerActive) return;
+  try {
+    const codes = await detector.detect(video);
+    if (codes.length > 0) {
+      const raw = codes[0].rawValue;
+      if (dbg) dbg.textContent = 'DECODED: ' + raw + ' | IDS: ' + clientiCache.map(c=>c.id).join(', ');
+      onScanSuccess(raw.trim());
+      return;
+    }
+  } catch(e) {}
+  setTimeout(() => scanWithDetector(detector, video, dbg), 200);
+}
+
 function scanFrame() {
   if (!scannerActive) return;
   const video = document.getElementById('qr-video');
   const canvas = document.getElementById('qr-canvas');
+  const dbg = document.getElementById('scan-debug');
   if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) {
     requestAnimationFrame(scanFrame);
     return;
@@ -831,10 +854,9 @@ function scanFrame() {
   const ctx = canvas.getContext('2d');
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
-  if (code) {
-    const dbg = document.getElementById('scan-debug');
-    if (dbg) dbg.textContent = 'RAW: [' + code.data + '] LEN: ' + code.data.length + ' CODES: ' + Array.from(code.data).map(c=>c.charCodeAt(0)).join(',');
+  const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'attemptBoth' });
+  if (code && code.data) {
+    if (dbg) dbg.textContent = 'DECODED: ' + code.data + ' | IDS: ' + clientiCache.map(c=>c.id).join(', ');
     onScanSuccess(code.data.trim());
   } else {
     requestAnimationFrame(scanFrame);
