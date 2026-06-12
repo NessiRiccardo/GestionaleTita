@@ -13,274 +13,183 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
-  --bg: #0a0a0a; --bg2: #111111; --bg3: #1a1a1a;
-  --border: #2a2a2a; --border2: #333;
-  --text: #e8e8e8; --text2: #888; --text3: #555;
-  --accent: #c8f542; --accent2: #a0c430;
-  --red: #ff4444; --orange: #ff9500; --green: #30d158;
-  --font: 'DM Mono', 'Courier New', monospace;
-  --font2: 'DM Sans', system-ui, sans-serif;
-  --radius: 8px;
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --bg:#0a0a0a;--bg2:#111111;--bg3:#1a1a1a;--border:#2a2a2a;--border2:#333;
+  --text:#e8e8e8;--text2:#888;--text3:#555;
+  --accent:#c8f542;--red:#ff4444;--orange:#ff9500;--green:#30d158;
+  --font:'DM Mono','Courier New',monospace;--font2:'DM Sans',system-ui,sans-serif;
+  --radius:8px;--safe-bottom:env(safe-area-inset-bottom,0px);
 }
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--font2); overflow: hidden; }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font2);overflow:hidden}
+#app{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;position:relative}
+#header{padding:16px 20px 12px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+#header h1{font-family:var(--font);font-size:15px;letter-spacing:0.1em;color:var(--accent);font-weight:500}
+#header .subtitle{font-size:11px;color:var(--text3);letter-spacing:0.05em;margin-top:1px}
+.header-actions{display:flex;gap:8px}
+#main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 20px;padding-bottom:calc(80px + var(--safe-bottom))}
+#nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--bg2);border-top:1px solid var(--border);display:none;padding-bottom:var(--safe-bottom);z-index:100}
+.nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 0 12px;background:none;border:none;color:var(--text3);font-size:10px;letter-spacing:0.06em;font-family:var(--font);cursor:pointer;transition:color 0.15s}
+.nav-btn svg{width:22px;height:22px}
+.nav-btn.active{color:var(--accent)}
+.view{display:none}
+.view.active{display:block}
 
-#app { display: flex; flex-direction: column; height: 100dvh; max-width: 480px; margin: 0 auto; position: relative; }
+/* LOGIN */
+#view-login{position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto;padding:20px;flex-direction:column;justify-content:center}
+#view-login.open{display:flex}
+.login-tabs{display:flex;gap:0;margin-bottom:24px;background:var(--bg3);border-radius:var(--radius);padding:4px}
+.login-tab{flex:1;padding:8px;text-align:center;font-size:13px;border-radius:6px;cursor:pointer;color:var(--text2);transition:all 0.15s;border:none;background:none;font-family:var(--font2)}
+.login-tab.active{background:var(--bg2);color:var(--text);border:1px solid var(--border2)}
 
-/* ── HEADER ── */
-#header { padding: 16px 20px 12px; background: var(--bg); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
-#header h1 { font-family: var(--font); font-size: 15px; letter-spacing: 0.1em; color: var(--accent); font-weight: 500; }
-#header .subtitle { font-size: 11px; color: var(--text3); letter-spacing: 0.05em; margin-top: 1px; }
-.header-actions { display: flex; gap: 8px; }
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s}
+.card:active{border-color:var(--border2)}
+.card-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.card-name{font-size:16px;font-weight:600;color:var(--text)}
+.card-meta{font-size:12px;color:var(--text2);margin-top:2px}
+.badge{font-family:var(--font);font-size:11px;padding:3px 8px;border-radius:4px;font-weight:500;white-space:nowrap}
+.badge-ok{background:rgba(48,209,88,0.15);color:var(--green)}
+.badge-warn{background:rgba(255,149,0,0.15);color:var(--orange)}
+.badge-empty{background:rgba(255,68,68,0.15);color:var(--red)}
+.badge-free{background:rgba(200,245,66,0.12);color:var(--accent)}
+.badge-done{background:rgba(136,136,136,0.15);color:var(--text2)}
+.carnet-bar{margin-top:10px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden}
+.carnet-fill{height:100%;border-radius:2px;transition:width 0.3s}
 
-#main { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 16px 20px; padding-bottom: calc(80px + var(--safe-bottom)); }
+.section-title{font-family:var(--font);font-size:11px;letter-spacing:0.1em;color:var(--text3);text-transform:uppercase;margin-bottom:12px;margin-top:20px}
+.section-title:first-child{margin-top:0}
 
-/* ── NAV ── */
-#nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; background: var(--bg2); border-top: 1px solid var(--border); display: flex; padding-bottom: var(--safe-bottom); z-index: 100; }
-.nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 0 12px; background: none; border: none; color: var(--text3); font-size: 10px; letter-spacing: 0.06em; font-family: var(--font); cursor: pointer; transition: color 0.15s; }
-.nav-btn svg { width: 22px; height: 22px; }
-.nav-btn.active { color: var(--accent); }
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 20px;border-radius:var(--radius);border:none;font-family:var(--font2);font-size:14px;font-weight:500;cursor:pointer;transition:opacity 0.15s,transform 0.1s;width:100%}
+.btn:active{transform:scale(0.98);opacity:0.85}
+.btn-primary{background:var(--accent);color:#000}
+.btn-secondary{background:var(--bg3);color:var(--text);border:1px solid var(--border2)}
+.btn-danger{background:rgba(255,68,68,0.15);color:var(--red);border:1px solid rgba(255,68,68,0.2)}
+.btn-sm{padding:8px 14px;font-size:13px;width:auto}
+.btn-row{display:flex;gap:10px}
+.btn-row .btn{flex:1}
 
-/* ── VIEWS ── */
-.view { display: none; }
-.view.active { display: block; }
+/* FORMS */
+.form-group{margin-bottom:16px}
+label{display:block;font-size:11px;letter-spacing:0.08em;color:var(--text3);font-family:var(--font);margin-bottom:6px;text-transform:uppercase}
+input,select,textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font2);font-size:15px;padding:12px 14px;outline:none;transition:border-color 0.15s;-webkit-appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{min-height:80px;resize:vertical}
+select option{background:#1a1a1a}
 
+/* SCANNER */
+#scanner-container{position:relative;background:#000;border-radius:var(--radius);overflow:hidden;margin-bottom:12px}
+#qr-video{width:100%;display:block}
+#qr-canvas{display:none}
 
-/* ── LOGIN ── */
-#view-login { flex-direction: column; justify-content: center; min-height: calc(100dvh - 120px); }
-.login-logo { text-align: center; margin-bottom: 40px; }
-.login-logo h1 { font-family: var(--font); font-size: 20px; color: var(--accent); letter-spacing: 0.15em; }
-.login-logo p { font-size: 13px; color: var(--text3); margin-top: 6px; }
-.login-tabs { display: flex; gap: 0; margin-bottom: 24px; background: var(--bg3); border-radius: var(--radius); padding: 4px; }
-.login-tab { flex: 1; padding: 8px; text-align: center; font-size: 13px; border-radius: 6px; cursor: pointer; color: var(--text2); transition: all 0.15s; border: none; background: none; font-family: var(--font2); }
-.login-tab.active { background: var(--bg2); color: var(--text); border: 1px solid var(--border2); }
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.stat-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:14px;text-align:center}
+.stat-num{font-family:var(--font);font-size:28px;font-weight:500;color:var(--accent);line-height:1}
+.stat-label{font-size:11px;color:var(--text2);margin-top:4px;letter-spacing:0.05em}
 
-/* ── CARDS ── */
-.card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 10px; cursor: pointer; transition: border-color 0.15s; }
-.card:active { border-color: var(--border2); }
-.card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-.card-name { font-size: 16px; font-weight: 600; color: var(--text); }
-.card-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
-.badge { font-family: var(--font); font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 500; white-space: nowrap; }
-.badge-ok { background: rgba(48,209,88,0.15); color: var(--green); }
-.badge-warn { background: rgba(255,149,0,0.15); color: var(--orange); }
-.badge-empty { background: rgba(255,68,68,0.15); color: var(--red); }
-.badge-free { background: rgba(200,245,66,0.12); color: var(--accent); }
-.carnet-bar { margin-top: 10px; height: 4px; background: var(--bg3); border-radius: 2px; overflow: hidden; }
-.carnet-fill { height: 100%; border-radius: 2px; transition: width 0.3s; }
+/* LESSON ITEMS */
+.lesson-item{padding:12px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px}
+.lesson-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);margin-top:5px;flex-shrink:0}
+.lesson-date{font-family:var(--font);font-size:13px;color:var(--text)}
+.lesson-note{font-size:12px;color:var(--text2);margin-top:2px}
 
-/* ── SECTION TITLES ── */
-.section-title { font-family: var(--font); font-size: 11px; letter-spacing: 0.1em; color: var(--text3); text-transform: uppercase; margin-bottom: 12px; margin-top: 20px; }
-.section-title:first-child { margin-top: 0; }
+/* FILTER TABS */
+.filter-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.filter-tab{padding:6px 12px;border-radius:20px;font-size:12px;font-family:var(--font);letter-spacing:0.05em;border:1px solid var(--border2);background:none;color:var(--text2);cursor:pointer;transition:all 0.15s}
+.filter-tab.active{background:var(--accent);color:#000;border-color:var(--accent)}
 
-/* ── BUTTONS ── */
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: var(--radius); border: none; font-family: var(--font2); font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.15s, transform 0.1s; width: 100%; }
-.btn:active { transform: scale(0.98); opacity: 0.85; }
-.btn-primary { background: var(--accent); color: #000; }
-.btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border2); }
-.btn-danger { background: rgba(255,68,68,0.15); color: var(--red); border: 1px solid rgba(255,68,68,0.2); }
-.btn-sm { padding: 8px 14px; font-size: 13px; width: auto; }
-.btn-row { display: flex; gap: 10px; }
-.btn-row .btn { flex: 1; }
+/* CARNET CARD */
+.carnet-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px}
+.carnet-card.active-carnet{border-color:var(--accent);border-width:1px}
+.carnet-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.carnet-card-title{font-size:14px;font-weight:600}
+.carnet-card-date{font-size:11px;color:var(--text3);font-family:var(--font)}
 
-/* ── FORMS ── */
-.form-group { margin-bottom: 16px; }
-label { display: block; font-size: 11px; letter-spacing: 0.08em; color: var(--text3); font-family: var(--font); margin-bottom: 6px; text-transform: uppercase; }
-input, select, textarea { width: 100%; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: var(--font2); font-size: 15px; padding: 12px 14px; outline: none; transition: border-color 0.15s; -webkit-appearance: none; }
-input:focus, select:focus, textarea:focus { border-color: var(--accent); }
-textarea { min-height: 80px; resize: vertical; }
-select option { background: #1a1a1a; }
-.toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
-.toggle-label { font-size: 14px; color: var(--text); }
-.toggle-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
-.toggle { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
-.toggle input { opacity: 0; width: 0; height: 0; }
-.toggle-slider { position: absolute; inset: 0; background: var(--bg3); border: 1px solid var(--border2); border-radius: 13px; cursor: pointer; transition: background 0.2s; }
-.toggle-slider:before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; top: 3px; background: var(--text2); border-radius: 50%; transition: transform 0.2s, background 0.2s; }
-.toggle input:checked + .toggle-slider { background: var(--accent); border-color: var(--accent); }
-.toggle input:checked + .toggle-slider:before { transform: translateX(18px); background: #000; }
+/* MODALS */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-bottom:none;border-radius:12px 12px 0 0;padding:24px 20px;padding-bottom:calc(24px + var(--safe-bottom));width:100%;max-width:480px;max-height:90dvh;overflow-y:auto;animation:slideUp 0.25s ease}
+@keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-title{font-size:18px;font-weight:600;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.modal-close{background:var(--bg3);border:none;color:var(--text2);width:28px;height:28px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 
-/* ── SCANNER ── */
-#scanner-container { background: #000; border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; position: relative; }
-#reader { width: 100%; }
-#reader video { border-radius: 0 !important; }
-.scan-overlay { pointer-events: none; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
-.scan-frame { width: 200px; height: 200px; position: relative; }
-.scan-frame::before, .scan-frame::after, .scan-frame > span::before, .scan-frame > span::after { content: ''; position: absolute; width: 24px; height: 24px; border-color: var(--accent); border-style: solid; }
-.scan-frame::before { top: 0; left: 0; border-width: 2px 0 0 2px; }
-.scan-frame::after { top: 0; right: 0; border-width: 2px 2px 0 0; }
-.scan-frame > span::before { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
-.scan-frame > span::after { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+/* QR */
+.qr-wrapper{display:flex;justify-content:center;padding:24px;background:var(--bg3);border-radius:var(--radius);margin-bottom:16px}
 
-/* ── SCAN RESULT ── */
-#scan-result { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius); padding: 20px; display: none; }
-#scan-result.show { display: block; }
-.scan-client-name { font-size: 22px; font-weight: 600; margin-bottom: 4px; }
-.scan-info-row { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
-.scan-info-row:last-of-type { border-bottom: none; }
-.scan-info-label { color: var(--text2); width: 90px; flex-shrink: 0; font-size: 12px; font-family: var(--font); }
+/* SETTINGS */
+.settings-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:16px;overflow:hidden}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.1s}
+.settings-row:last-child{border-bottom:none}
+.settings-row:active{background:var(--bg3)}
+.settings-row-label{font-size:14px}
+.settings-row-sub{font-size:12px;color:var(--text2);margin-top:2px}
+.settings-row-arrow{color:var(--text3);font-size:18px}
 
-/* ── CLIENT DETAIL ── */
-.qr-wrapper { display: flex; justify-content: center; padding: 24px; background: var(--bg3); border-radius: var(--radius); margin-bottom: 16px; }
-.stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-.stat-box { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; text-align: center; }
-.stat-num { font-family: var(--font); font-size: 28px; font-weight: 500; color: var(--accent); line-height: 1; }
-.stat-label { font-size: 11px; color: var(--text2); margin-top: 4px; letter-spacing: 0.05em; }
-.lesson-item { padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; gap: 12px; }
-.lesson-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-top: 5px; flex-shrink: 0; }
-.lesson-date { font-family: var(--font); font-size: 13px; color: var(--text); }
-.lesson-note { font-size: 12px; color: var(--text2); margin-top: 2px; }
+/* SCAN RESULT */
+#scan-result{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);padding:20px;display:none}
+#scan-result.show{display:block}
+.scan-client-name{font-size:22px;font-weight:600;margin-bottom:4px}
+.scan-info-row{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--border);font-size:14px}
+.scan-info-label{color:var(--text2);width:90px;flex-shrink:0;font-size:12px;font-family:var(--font)}
 
-/* ── MODAL ── */
-.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; display: none; align-items: flex-end; justify-content: center; }
-.modal-bg.open { display: flex; }
-.modal { background: var(--bg2); border: 1px solid var(--border2); border-bottom: none; border-radius: 12px 12px 0 0; padding: 24px 20px; padding-bottom: calc(24px + var(--safe-bottom)); width: 100%; max-width: 480px; max-height: 90dvh; overflow-y: auto; animation: slideUp 0.25s ease; }
-@keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-.modal-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-.modal-close { background: var(--bg3); border: none; color: var(--text2); width: 28px; height: 28px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+/* LOADING */
+#loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:16px}
+.spinner{width:32px;height:32px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading-screen p{font-family:var(--font);font-size:12px;color:var(--text3);letter-spacing:0.1em}
 
-/* ── EMPTY ── */
-.empty { text-align: center; padding: 60px 20px; color: var(--text3); }
-.empty-icon { font-size: 40px; margin-bottom: 12px; }
-.empty-text { font-size: 14px; line-height: 1.6; }
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-icon{font-size:40px;margin-bottom:12px}
+.empty-text{font-size:14px;line-height:1.6}
 
-/* ── SETTINGS ── */
-.settings-section { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 16px; overflow: hidden; }
-.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
-.settings-row:last-child { border-bottom: none; }
-.settings-row:active { background: var(--bg3); }
-.settings-row-label { font-size: 14px; }
-.settings-row-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
-.settings-row-arrow { color: var(--text3); font-size: 18px; }
+/* TOAST */
+#toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-80px);background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 18px;border-radius:20px;font-size:13px;z-index:9999;transition:transform 0.3s ease;white-space:nowrap;max-width:90vw}
+#toast.show{transform:translateX(-50%) translateY(0)}
 
-/* ── LOADING ── */
-#loading-screen { position: fixed; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; z-index: 999; flex-direction: column; gap: 16px; }
-.spinner { width: 32px; height: 32px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-#loading-screen p { font-family: var(--font); font-size: 12px; color: var(--text3); letter-spacing: 0.1em; }
-
-/* ── TOAST ── */
-#toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--bg3); border: 1px solid var(--border2); color: var(--text); padding: 10px 18px; border-radius: 20px; font-size: 13px; z-index: 999; transition: transform 0.3s ease; white-space: nowrap; max-width: 90vw; }
-#toast.show { transform: translateX(-50%) translateY(0); }
-
-.search-input { margin-bottom: 16px; }
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 </style>
 </head>
 <body>
 
-<div id="loading-screen">
-  <div class="spinner"></div>
-  <p>CARICAMENTO...</p>
-</div>
+<div id="loading-screen"><div class="spinner"></div><p>CARICAMENTO...</p></div>
 
-<div id="app" style="display:none;">
+<div id="app" style="display:none">
   <div id="header">
-    <div>
-      <h1>LEZIONI MANAGER</h1>
-      <div class="subtitle" id="header-subtitle">–</div>
-    </div>
+    <div><h1>LEZIONI MANAGER</h1><div class="subtitle" id="header-subtitle">–</div></div>
     <div class="header-actions" id="header-actions"></div>
   </div>
-
-  <!-- LOGIN SCREEN - fuori dal main, overlay fullscreen -->
-  <div id="view-login" style="position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto;padding:20px;display:flex;flex-direction:column;justify-content:center;">
-    <div style="max-width:400px;width:100%;margin:0 auto;">
-      <div style="text-align:center;margin-bottom:40px;">
-        <div style="font-family:var(--font);font-size:22px;color:var(--accent);letter-spacing:0.15em;">LEZIONI MANAGER</div>
-        <div style="font-size:13px;color:var(--text3);margin-top:6px;">Accedi per continuare</div>
-      </div>
-
-      <div class="login-tabs">
-        <button class="login-tab active" id="tab-login" onclick="switchAuthTab('login')">Accedi</button>
-        <button class="login-tab" id="tab-register" onclick="switchAuthTab('register')">Registrati</button>
-      </div>
-
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="auth-email" placeholder="tua@email.com" autocomplete="email">
-      </div>
-
-      <div class="form-group">
-        <label>Password</label>
-        <div style="position:relative;">
-          <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" style="padding-right:48px;">
-          <button onclick="togglePwd('auth-password','eye1')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;" id="eye1">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div class="form-group" id="pwd-confirm-group" style="display:none;">
-        <label>Conferma password</label>
-        <div style="position:relative;">
-          <input type="password" id="auth-password2" placeholder="••••••••" style="padding-right:48px;">
-          <button onclick="togglePwd('auth-password2','eye2')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);padding:4px;" id="eye2">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-          </button>
-        </div>
-      </div>
-
-      <div id="auth-error" style="color:var(--red);font-size:13px;margin-bottom:12px;display:none;padding:10px 14px;background:rgba(255,68,68,0.1);border-radius:var(--radius);border:1px solid rgba(255,68,68,0.2);"></div>
-      <div id="auth-success" style="color:var(--green);font-size:13px;margin-bottom:12px;display:none;padding:10px 14px;background:rgba(48,209,88,0.1);border-radius:var(--radius);border:1px solid rgba(48,209,88,0.2);"></div>
-
-      <button class="btn btn-primary" id="auth-btn" onclick="handleAuth()">Accedi</button>
-
-      <div id="reset-link" style="text-align:center;margin-top:16px;">
-        <button onclick="handleResetPassword()" style="background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--font2);">Password dimenticata?</button>
-      </div>
-    </div>
-  </div><!-- end view-login -->
-
   <div id="main">
-    <!-- CLIENTI -->
-    <div id="view-clienti" class="view">
-      <input type="search" class="search-input" placeholder="Cerca cliente…" id="search-clienti" oninput="renderClienti()">
-      <div id="lista-clienti"></div>
-    </div>
-
-    <!-- SCANNER -->
+    <div id="view-clienti" class="view active"></div>
     <div id="view-scanner" class="view">
       <div class="section-title">Scansiona QR del cliente</div>
-      <div id="scanner-container" style="position:relative;background:#000;border-radius:var(--radius);overflow:hidden;margin-bottom:12px;">
-        <video id="qr-video" autoplay playsinline muted style="width:100%;display:block;"></video>
-        <canvas id="qr-canvas" style="display:none;"></canvas>
-        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
-          <div style="width:200px;height:200px;position:relative;">
-            <div style="position:absolute;top:0;left:0;width:24px;height:24px;border-top:2px solid var(--accent);border-left:2px solid var(--accent);"></div>
-            <div style="position:absolute;top:0;right:0;width:24px;height:24px;border-top:2px solid var(--accent);border-right:2px solid var(--accent);"></div>
-            <div style="position:absolute;bottom:0;left:0;width:24px;height:24px;border-bottom:2px solid var(--accent);border-left:2px solid var(--accent);"></div>
-            <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-bottom:2px solid var(--accent);border-right:2px solid var(--accent);"></div>
+      <div id="scanner-container">
+        <video id="qr-video" autoplay playsinline muted style="width:100%;display:block"></video>
+        <canvas id="qr-canvas" style="display:none"></canvas>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+          <div style="width:200px;height:200px;position:relative">
+            <div style="position:absolute;top:0;left:0;width:24px;height:24px;border-top:2px solid var(--accent);border-left:2px solid var(--accent)"></div>
+            <div style="position:absolute;top:0;right:0;width:24px;height:24px;border-top:2px solid var(--accent);border-right:2px solid var(--accent)"></div>
+            <div style="position:absolute;bottom:0;left:0;width:24px;height:24px;border-bottom:2px solid var(--accent);border-left:2px solid var(--accent)"></div>
+            <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-bottom:2px solid var(--accent);border-right:2px solid var(--accent)"></div>
           </div>
         </div>
       </div>
-      <div id="scan-status" style="text-align:center;font-family:var(--font);font-size:12px;color:var(--text3);letter-spacing:0.08em;margin-bottom:12px;">AVVIO FOTOCAMERA...</div>
-      <div id="scan-debug" style="font-family:var(--font);font-size:11px;color:var(--text3);background:var(--bg3);border-radius:var(--radius);padding:10px;margin-bottom:12px;min-height:40px;word-break:break-all;"></div>
+      <div id="scan-status" style="text-align:center;font-family:var(--font);font-size:12px;color:var(--text3);letter-spacing:0.08em;margin-bottom:12px">AVVIO FOTOCAMERA...</div>
       <div id="scan-result">
         <div class="scan-client-name" id="sr-nome"></div>
-        <div class="scan-info-row">
-          <span class="scan-info-label">DATA/ORA</span>
-          <span id="sr-data"></span>
-        </div>
-        <div class="scan-info-row" id="sr-carnet-row">
-          <span class="scan-info-label">CARNET</span>
-          <span id="sr-carnet"></span>
-        </div>
-        <div class="form-group" style="margin-top:16px;">
-          <label>Note lezione (opzionale)</label>
-          <textarea id="sr-note" placeholder="Aggiungi una nota…"></textarea>
-        </div>
+        <div class="scan-info-row"><span class="scan-info-label">DATA/ORA</span><span id="sr-data"></span></div>
+        <div class="scan-info-row" id="sr-carnet-row"><span class="scan-info-label">CARNET</span><span id="sr-carnet"></span></div>
+        <div class="form-group" style="margin-top:16px"><label>Note lezione (opzionale)</label><textarea id="sr-note" placeholder="Aggiungi una nota…"></textarea></div>
         <div class="btn-row">
           <button class="btn btn-secondary" onclick="annullaScan()">Annulla</button>
           <button class="btn btn-primary" onclick="confermaScan()">Conferma</button>
         </div>
       </div>
     </div>
-
-    <!-- SETTINGS -->
     <div id="view-settings" class="view">
       <div class="section-title">Dati</div>
       <div class="settings-section">
@@ -304,127 +213,106 @@ select option { background: #1a1a1a; }
       </div>
       <div class="section-title">Account</div>
       <div class="settings-section">
-        <div class="settings-row">
-          <div><div class="settings-row-label">Email</div><div class="settings-row-sub" id="settings-email">–</div></div>
-        </div>
-        <div class="settings-row" id="stats-row">
-          <div><div class="settings-row-label">Statistiche</div><div class="settings-row-sub" id="stats-text">–</div></div>
-        </div>
+        <div class="settings-row"><div><div class="settings-row-label">Email</div><div class="settings-row-sub" id="settings-email">–</div></div></div>
+        <div class="settings-row"><div><div class="settings-row-label">Statistiche</div><div class="settings-row-sub" id="stats-text">–</div></div></div>
       </div>
-      <div style="margin-top:8px;">
-        <button class="btn btn-secondary" onclick="handleLogout()">Esci dall'account</button>
-      </div>
-      <div style="margin-top:10px;">
-        <button class="btn btn-danger" onclick="confirmReset()">Reset completo dati</button>
-      </div>
+      <div style="margin-top:8px"><button class="btn btn-secondary" onclick="handleLogout()">Esci dall'account</button></div>
+      <div style="margin-top:10px"><button class="btn btn-danger" onclick="confirmReset()">Reset completo dati</button></div>
     </div>
-
-    <!-- DETTAGLIO CLIENTE -->
     <div id="view-cliente" class="view"></div>
   </div>
-
   <div id="nav">
     <button class="nav-btn" id="nav-clienti" onclick="showView('clienti')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-        <circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/>
-        <path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="9" cy="7" r="4"/><path d="M3 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></svg>
       CLIENTI
     </button>
     <button class="nav-btn" id="nav-scanner" onclick="showView('scanner')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-        <path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/>
-        <rect x="7" y="7" width="4" height="4" rx="1"/><rect x="13" y="7" width="4" height="4" rx="1"/>
-        <rect x="7" y="13" width="4" height="4" rx="1"/><rect x="13" y="13" width="4" height="4" rx="1"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 7V5a2 2 0 012-2h2M17 3h2a2 2 0 012 2v2M21 17v2a2 2 0 01-2 2h-2M7 21H5a2 2 0 01-2-2v-2"/><rect x="7" y="7" width="4" height="4" rx="1"/><rect x="13" y="7" width="4" height="4" rx="1"/><rect x="7" y="13" width="4" height="4" rx="1"/><rect x="13" y="13" width="4" height="4" rx="1"/></svg>
       SCANSIONA
     </button>
     <button class="nav-btn" id="nav-settings" onclick="showView('settings')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
-      </svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
       IMPOSTAZ.
     </button>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="view-login" class="open">
+  <div style="max-width:400px;width:100%;margin:0 auto">
+    <div style="text-align:center;margin-bottom:40px">
+      <div style="font-family:var(--font);font-size:22px;color:var(--accent);letter-spacing:0.15em">LEZIONI MANAGER</div>
+      <div style="font-size:13px;color:var(--text3);margin-top:6px">Accedi per continuare</div>
+    </div>
+    <div class="login-tabs">
+      <button class="login-tab active" id="tab-login" onclick="switchAuthTab('login')">Accedi</button>
+      <button class="login-tab" id="tab-register" onclick="switchAuthTab('register')">Registrati</button>
+    </div>
+    <div class="form-group"><label>Email</label><input type="email" id="auth-email" placeholder="tua@email.com" autocomplete="email"></div>
+    <div class="form-group">
+      <label>Password</label>
+      <div style="position:relative">
+        <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password" style="padding-right:48px">
+        <button onclick="togglePwd('auth-password','eye1')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);padding:4px" id="eye1">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="form-group" id="pwd-confirm-group" style="display:none">
+      <label>Conferma password</label>
+      <div style="position:relative">
+        <input type="password" id="auth-password2" placeholder="••••••••" style="padding-right:48px">
+        <button onclick="togglePwd('auth-password2','eye2')" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text2);padding:4px" id="eye2">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+    <div id="auth-error" style="color:var(--red);font-size:13px;margin-bottom:12px;display:none;padding:10px 14px;background:rgba(255,68,68,0.1);border-radius:var(--radius);border:1px solid rgba(255,68,68,0.2)"></div>
+    <div id="auth-success" style="color:var(--green);font-size:13px;margin-bottom:12px;display:none;padding:10px 14px;background:rgba(48,209,88,0.1);border-radius:var(--radius);border:1px solid rgba(48,209,88,0.2)"></div>
+    <button class="btn btn-primary" id="auth-btn" onclick="handleAuth()">Accedi</button>
+    <div id="reset-link" style="text-align:center;margin-top:16px">
+      <button onclick="handleResetPassword()" style="background:none;border:none;color:var(--text2);font-size:13px;cursor:pointer;font-family:var(--font2)">Password dimenticata?</button>
+    </div>
   </div>
 </div>
 
 <!-- MODAL: NUOVO/MODIFICA CLIENTE -->
 <div class="modal-bg" id="modal-cliente">
   <div class="modal">
-    <div class="modal-title">
-      <span id="modal-title-text">Nuovo cliente</span>
-      <button class="modal-close" onclick="closeModal('modal-cliente')">✕</button>
-    </div>
-    <div class="form-group">
-      <label>Nome *</label>
-      <input type="text" id="f-nome" placeholder="Mario Rossi">
-    </div>
-    <div class="form-group">
-      <label>Telefono</label>
-      <input type="tel" id="f-tel" placeholder="+39 333 000 0000">
-    </div>
-    <div class="form-group">
-      <label>Note</label>
-      <input type="text" id="f-note" placeholder="Note sul cliente">
-    </div>
-    <div class="toggle-row">
-      <div>
-        <div class="toggle-label">Carnet</div>
-        <div class="toggle-sub">Abilita tracciamento pacchetto lezioni</div>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="f-carnet-on" onchange="toggleCarnetFields()">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-    <div id="carnet-fields" style="display:none; margin-top:16px;">
-      <div class="form-group">
-        <label>Numero lezioni nel carnet</label>
-        <input type="number" id="f-carnet-tot" value="10" min="1" max="999">
-      </div>
-    </div>
-    <div style="margin-top:20px;">
-      <button class="btn btn-primary" id="btn-salva-cliente" onclick="salvaCliente()">Salva</button>
-    </div>
+    <div class="modal-title"><span id="modal-cliente-title">Nuovo cliente</span><button class="modal-close" onclick="closeModal('modal-cliente')">✕</button></div>
+    <div class="form-group"><label>Nome *</label><input type="text" id="f-nome" placeholder="Mario Rossi"></div>
+    <div class="form-group"><label>Telefono</label><input type="tel" id="f-tel" placeholder="+39 333 000 0000"></div>
+    <div class="form-group"><label>Note</label><input type="text" id="f-nota" placeholder="Note sul cliente"></div>
+    <div style="margin-top:20px"><button class="btn btn-primary" id="btn-salva-cliente" onclick="salvaCliente()">Salva</button></div>
+  </div>
+</div>
+
+<!-- MODAL: NUOVO CARNET -->
+<div class="modal-bg" id="modal-carnet">
+  <div class="modal">
+    <div class="modal-title"><span id="modal-carnet-title">Nuovo carnet</span><button class="modal-close" onclick="closeModal('modal-carnet')">✕</button></div>
+    <div class="form-group"><label>Numero lezioni *</label><input type="number" id="f-carnet-tot" value="10" min="1" max="999"></div>
+    <div class="form-group"><label>Note (opzionale)</label><input type="text" id="f-carnet-nota" placeholder="es. Carnet primaverile"></div>
+    <div style="margin-top:20px"><button class="btn btn-primary" id="btn-salva-carnet" onclick="salvaCarnet()">Aggiungi carnet</button></div>
   </div>
 </div>
 
 <!-- MODAL: EXPORT -->
 <div class="modal-bg" id="modal-export">
   <div class="modal">
-    <div class="modal-title">
-      <span>Esporta Report</span>
-      <button class="modal-close" onclick="closeModal('modal-export')">✕</button>
-    </div>
-    <div class="form-group">
-      <label>Cliente</label>
-      <select id="exp-cliente">
-        <option value="">Tutti i clienti</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Data inizio</label>
-      <input type="date" id="exp-from">
-    </div>
-    <div class="form-group">
-      <label>Data fine</label>
-      <input type="date" id="exp-to">
-    </div>
-    <div style="margin-top:20px;">
-      <button class="btn btn-primary" onclick="esportaCSVFiltrato()">Esporta CSV</button>
-    </div>
+    <div class="modal-title"><span>Esporta Report</span><button class="modal-close" onclick="closeModal('modal-export')">✕</button></div>
+    <div class="form-group"><label>Cliente</label><select id="exp-cliente"><option value="">Tutti i clienti</option></select></div>
+    <div class="form-group"><label>Data inizio</label><input type="date" id="exp-from"></div>
+    <div class="form-group"><label>Data fine</label><input type="date" id="exp-to"></div>
+    <div style="margin-top:20px"><button class="btn btn-primary" onclick="esportaCSVFiltrato()">Esporta CSV</button></div>
   </div>
 </div>
 
 <!-- MODAL: CONFIRM -->
 <div class="modal-bg" id="modal-confirm">
   <div class="modal">
-    <div class="modal-title">
-      <span id="confirm-title">Conferma</span>
-      <button class="modal-close" onclick="closeModal('modal-confirm')">✕</button>
-    </div>
-    <p id="confirm-text" style="color:var(--text2); font-size:14px; margin-bottom:24px; line-height:1.6;"></p>
+    <div class="modal-title"><span id="confirm-title">Conferma</span><button class="modal-close" onclick="closeModal('modal-confirm')">✕</button></div>
+    <p id="confirm-text" style="color:var(--text2);font-size:14px;margin-bottom:24px;line-height:1.6"></p>
     <div class="btn-row">
       <button class="btn btn-secondary" onclick="closeModal('modal-confirm')">Annulla</button>
       <button class="btn btn-danger" id="confirm-action-btn">Conferma</button>
@@ -435,22 +323,25 @@ select option { background: #1a1a1a; }
 <div id="toast"></div>
 
 <script>
-// ── SUPABASE ──
 const SUPABASE_URL = 'https://cqjrspmsqawtonhovitf.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_dB0jxOze_SIcHc4fYQoh6A_ID9h1Ms8';
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── STATE ──
 let currentUser = null;
 let clientiCache = [];
 let lezioniCache = [];
-let editingId = null;
+let carnetCache = [];
+let editingClienteId = null;
+let editingCarnetClienteId = null;
 let scanClienteId = null;
-let scanner = null;
 let scannerActive = false;
-let currentView = 'login';
+let currentView = 'clienti';
 let prevView = null;
+let currentClienteId = null;
+let lessonFilter = 'all';
+let detailRangeFrom = null;
+let detailRangeTo = null;
 
 // ── INIT ──
 async function init() {
@@ -458,32 +349,21 @@ async function init() {
   document.getElementById('loading-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
   if (session) {
-    // Verifica che l'utente esista ancora
     const { data: { user }, error } = await sb.auth.getUser();
-    if (error || !user) {
-      await sb.auth.signOut();
-      document.getElementById('view-login').style.display = 'flex';
-      return;
-    }
+    if (error || !user) { await sb.auth.signOut(); showLogin(); return; }
     currentUser = user;
-    document.getElementById('view-login').style.display = 'none';
+    hideLogin();
     await enterApp();
   } else {
-    document.getElementById('view-login').style.display = 'flex';
+    showLogin();
   }
 }
 
-sb.auth.onAuthStateChange((event, session) => {
-  if (event === 'SIGNED_IN' && session) {
-    currentUser = session.user;
-  } else if (event === 'SIGNED_OUT') {
-    currentUser = null;
-  }
-});
+function showLogin() { document.getElementById('view-login').classList.add('open'); document.getElementById('nav').style.display = 'none'; }
+function hideLogin() { document.getElementById('view-login').classList.remove('open'); }
 
 // ── AUTH ──
 let authMode = 'login';
-
 function switchAuthTab(mode) {
   authMode = mode;
   document.getElementById('tab-login').classList.toggle('active', mode === 'login');
@@ -494,106 +374,62 @@ function switchAuthTab(mode) {
   document.getElementById('auth-error').style.display = 'none';
   document.getElementById('auth-success').style.display = 'none';
 }
-
 function togglePwd(inputId, btnId) {
   const input = document.getElementById(inputId);
   const isText = input.type === 'text';
   input.type = isText ? 'password' : 'text';
   document.getElementById(btnId).style.color = isText ? 'var(--text2)' : 'var(--accent)';
 }
-
 async function handleAuth() {
   const email = document.getElementById('auth-email').value.trim();
   const password = document.getElementById('auth-password').value;
   const btn = document.getElementById('auth-btn');
-
   hideAuthMessages();
-
   if (!email || !password) { showAuthError('Compila tutti i campi'); return; }
-  if (password.length < 6) { showAuthError('La password deve essere di almeno 6 caratteri'); return; }
-
+  if (password.length < 6) { showAuthError('Password minimo 6 caratteri'); return; }
   if (authMode === 'register') {
-    const password2 = document.getElementById('auth-password2').value;
-    if (password !== password2) { showAuthError('Le password non coincidono'); return; }
+    const p2 = document.getElementById('auth-password2').value;
+    if (password !== p2) { showAuthError('Le password non coincidono'); return; }
   }
-
-  btn.textContent = '...';
-  btn.disabled = true;
-
+  btn.textContent = '...'; btn.disabled = true;
   let result;
-  if (authMode === 'login') {
-    result = await sb.auth.signInWithPassword({ email, password });
-  } else {
-    result = await sb.auth.signUp({ email, password, options: { data: {} } });
-  }
-
-  btn.disabled = false;
-  btn.textContent = authMode === 'login' ? 'Accedi' : 'Registrati';
-
-  if (result.error) {
-    showAuthError(translateAuthError(result.error.message));
-    return;
-  }
-
+  if (authMode === 'login') result = await sb.auth.signInWithPassword({ email, password });
+  else result = await sb.auth.signUp({ email, password, options: { data: {} } });
+  btn.disabled = false; btn.textContent = authMode === 'login' ? 'Accedi' : 'Registrati';
+  if (result.error) { showAuthError(translateAuthError(result.error.message)); return; }
   let session = result.data.session;
+  if (!session) { const { data } = await sb.auth.getSession(); session = data.session; }
   if (!session) {
-    const { data } = await sb.auth.getSession();
-    session = data.session;
-  }
-  if (!session) {
-    if (authMode === 'register') {
-      showAuthSuccess('Registrazione completata! Ora accedi con le tue credenziali.');
-      switchAuthTab('login');
-    } else {
-      showAuthError('Sessione non disponibile. Riprova.');
-    }
+    if (authMode === 'register') { showAuthSuccess('Registrazione completata! Ora accedi.'); switchAuthTab('login'); }
+    else showAuthError('Sessione non disponibile. Riprova.');
     return;
   }
-
   currentUser = session.user;
+  hideLogin();
   await enterApp();
 }
-
 async function handleResetPassword() {
   const email = document.getElementById('auth-email').value.trim();
   if (!email) { showAuthError('Inserisci la tua email prima'); return; }
-  const { error } = await sb.auth.resetPasswordForEmail(email);
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://nessiriccardo.github.io/GestionaleTita/' });
   if (error) { showAuthError(translateAuthError(error.message)); return; }
-  showAuthSuccess('Email di recupero inviata. Controlla la tua casella.');
+  showAuthSuccess('Email di recupero inviata.');
 }
-
-function hideAuthMessages() {
-  document.getElementById('auth-error').style.display = 'none';
-  document.getElementById('auth-success').style.display = 'none';
-}
-
-function showAuthError(msg) {
-  const el = document.getElementById('auth-error');
-  el.textContent = msg;
-  el.style.display = 'block';
-  document.getElementById('auth-success').style.display = 'none';
-}
-
-function showAuthSuccess(msg) {
-  const el = document.getElementById('auth-success');
-  el.textContent = msg;
-  el.style.display = 'block';
-  document.getElementById('auth-error').style.display = 'none';
-}
-
+async function handleLogout() { await sb.auth.signOut(); currentUser = null; clientiCache = []; lezioniCache = []; carnetCache = []; stopScanner(); showLogin(); document.getElementById('header-actions').innerHTML = ''; document.getElementById('header-subtitle').textContent = '–'; }
+function hideAuthMessages() { document.getElementById('auth-error').style.display = 'none'; document.getElementById('auth-success').style.display = 'none'; }
+function showAuthError(msg) { const el = document.getElementById('auth-error'); el.textContent = msg; el.style.display = 'block'; document.getElementById('auth-success').style.display = 'none'; }
+function showAuthSuccess(msg) { const el = document.getElementById('auth-success'); el.textContent = msg; el.style.display = 'block'; document.getElementById('auth-error').style.display = 'none'; }
 function translateAuthError(msg) {
   if (msg.includes('Invalid login') || msg.includes('invalid_credentials')) return 'Email o password errati';
-  if (msg.includes('Email not confirmed')) return 'Email non confermata. Contatta l\'amministratore.';
-  if (msg.includes('already registered') || msg.includes('already been registered')) return 'Email già registrata. Usa Accedi.';
-  if (msg.includes('Password should') || msg.includes('weak_password')) return 'Password troppo corta (minimo 6 caratteri)';
-  if (msg.includes('rate limit') || msg.includes('Rate limit') || msg.includes('over_email_send_rate_limit')) return 'Troppi tentativi. Aspetta qualche minuto e riprova.';
-  if (msg.includes('Unable to validate') || msg.includes('invalid email')) return 'Email non valida';
+  if (msg.includes('Email not confirmed')) return 'Email non confermata';
+  if (msg.includes('already registered')) return 'Email già registrata. Usa Accedi.';
+  if (msg.includes('Password should') || msg.includes('weak_password')) return 'Password troppo corta (min 6 caratteri)';
+  if (msg.includes('rate limit') || msg.includes('over_email_send_rate_limit')) return 'Troppi tentativi. Aspetta qualche minuto.';
   return 'Errore: ' + msg;
 }
 
+// ── ENTER APP ──
 async function enterApp() {
-  // Nascondi l'overlay di login
-  document.getElementById('view-login').style.display = 'none';
   document.getElementById('nav').style.display = 'flex';
   document.getElementById('settings-email').textContent = currentUser.email;
   await loadData();
@@ -602,12 +438,14 @@ async function enterApp() {
 
 // ── DATA ──
 async function loadData() {
-  const [{ data: clienti }, { data: lezioni }] = await Promise.all([
+  const [{ data: clienti }, { data: lezioni }, { data: carnet }] = await Promise.all([
     sb.from('clienti').select('*').order('nome'),
-    sb.from('lezioni').select('*').order('ts')
+    sb.from('lezioni').select('*').order('ts'),
+    sb.from('carnet').select('*').order('created_at')
   ]);
   clientiCache = clienti || [];
   lezioniCache = lezioni || [];
+  carnetCache = carnet || [];
   updateHeaderSubtitle();
   updateStats();
 }
@@ -616,150 +454,203 @@ function updateHeaderSubtitle() {
   const n = clientiCache.length;
   document.getElementById('header-subtitle').textContent = n + ' client' + (n === 1 ? 'e' : 'i');
 }
-
 function updateStats() {
   const el = document.getElementById('stats-text');
-  if (!el) return;
-  el.textContent = clientiCache.length + ' clienti · ' + lezioniCache.length + ' lezioni totali';
+  if (el) el.textContent = clientiCache.length + ' clienti · ' + lezioniCache.length + ' lezioni totali';
+}
+
+// ── CARNET HELPERS ──
+function getCarnetAttivo(clienteId) {
+  const carnets = carnetCache.filter(c => c.cliente_id === clienteId).sort((a,b) => new Date(a.created_at) - new Date(b.created_at));
+  for (const c of carnets) {
+    const usate = lezioniCache.filter(l => l.cliente_id === clienteId && l.carnet_id === c.id).length;
+    if (usate < c.totale) return c;
+  }
+  return null;
+}
+
+function getCarnetStats(carnetId, clienteId) {
+  const c = carnetCache.find(x => x.id === carnetId);
+  if (!c) return null;
+  const usate = lezioniCache.filter(l => l.carnet_id === carnetId).length;
+  return { totale: c.totale, usate, rimaste: c.totale - usate, esaurito: usate >= c.totale };
 }
 
 // ── NAVIGATION ──
 function showView(name, data) {
   prevView = currentView;
   currentView = name;
-
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-
-  const navEl = document.getElementById('nav');
   const ha = document.getElementById('header-actions');
   ha.innerHTML = '';
-
-  if (name === 'login') {
-    navEl.style.display = 'none';
-    document.getElementById('view-login').style.display = 'flex';
-    return;
-  }
-
-  // Assicurati che il login sia sempre nascosto
-  document.getElementById('view-login').classList.remove('active');
-  navEl.style.display = 'flex';
-
   if (['clienti','scanner','settings'].includes(name)) {
     const btn = document.getElementById('nav-' + name);
     if (btn) btn.classList.add('active');
   }
-
   if (name === 'cliente' && data) {
+    currentClienteId = data;
+    lessonFilter = 'all';
+    detailRangeFrom = null; detailRangeTo = null;
     renderClienteDetail(data);
     document.getElementById('view-cliente').classList.add('active');
     ha.innerHTML = `<button class="btn btn-secondary btn-sm" onclick="goBack()">← Indietro</button>`;
   } else {
     const el = document.getElementById('view-' + name);
     if (el) el.classList.add('active');
-    if (name === 'clienti') {
-      ha.innerHTML = `<button class="btn btn-primary btn-sm" onclick="openModalNuovo()">+ Nuovo</button>`;
-      renderClienti();
-    } else if (name === 'scanner') {
-      startScanner();
-    } else if (name === 'settings') {
-      updateStats();
-    }
+    if (name === 'clienti') { ha.innerHTML = `<button class="btn btn-primary btn-sm" onclick="openModalNuovoCliente()">+ Nuovo</button>`; renderClienti(); }
+    else if (name === 'scanner') startScanner();
+    else if (name === 'settings') updateStats();
   }
-
   if (name !== 'scanner') stopScanner();
 }
-
 function goBack() { showView(prevView || 'clienti'); }
 
 // ── CLIENTI LIST ──
 function renderClienti() {
-  const query = (document.getElementById('search-clienti')?.value || '').toLowerCase();
-  const container = document.getElementById('lista-clienti');
+  const query = (document.querySelector('#view-clienti input')?.value || '').toLowerCase();
+  const container = document.getElementById('view-clienti');
   let lista = clientiCache;
   if (query) lista = lista.filter(c => c.nome.toLowerCase().includes(query) || (c.tel||'').includes(query));
 
+  let html = `<input type="search" style="width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font2);font-size:15px;padding:12px 14px;outline:none;margin-bottom:16px;-webkit-appearance:none" placeholder="Cerca cliente…" oninput="renderClienti()" value="${esc(query)}">`;
+
   if (lista.length === 0) {
-    container.innerHTML = `<div class="empty"><div class="empty-icon">👤</div><div class="empty-text">${query ? 'Nessun risultato' : 'Nessun cliente ancora.<br>Premi + Nuovo per iniziare.'}</div></div>`;
-    return;
+    html += `<div class="empty"><div class="empty-icon">👤</div><div class="empty-text">${query ? 'Nessun risultato' : 'Nessun cliente ancora.<br>Premi + Nuovo per iniziare.'}</div></div>`;
+    container.innerHTML = html; return;
   }
 
-  container.innerHTML = lista.map(c => {
+  html += lista.map(c => {
     const lezioni = lezioniCache.filter(l => l.cliente_id === c.id);
-    const totFatte = lezioni.length;
+    const carnetAttivo = getCarnetAttivo(c.id);
     let badgeHtml = '', barHtml = '';
-    if (c.carnet_on) {
-      const rimaste = c.carnet_tot - totFatte;
+    if (carnetAttivo) {
+      const stats = getCarnetStats(carnetAttivo.id, c.id);
+      const rimaste = stats.rimaste;
       if (rimaste <= 0) badgeHtml = `<span class="badge badge-empty">Esaurito</span>`;
       else if (rimaste <= 2) badgeHtml = `<span class="badge badge-warn">${rimaste} rimast${rimaste===1?'a':'e'}</span>`;
-      else badgeHtml = `<span class="badge badge-ok">${rimaste}/${c.carnet_tot}</span>`;
-      const pct = Math.min(100, (totFatte / c.carnet_tot) * 100);
+      else badgeHtml = `<span class="badge badge-ok">${rimaste}/${carnetAttivo.totale}</span>`;
+      const pct = Math.min(100, (stats.usate / carnetAttivo.totale) * 100);
       const color = rimaste <= 0 ? 'var(--red)' : rimaste <= 2 ? 'var(--orange)' : 'var(--green)';
       barHtml = `<div class="carnet-bar"><div class="carnet-fill" style="width:${pct}%;background:${color}"></div></div>`;
     } else {
-      badgeHtml = `<span class="badge badge-free">${totFatte} lez.</span>`;
+      badgeHtml = `<span class="badge badge-free">${lezioni.length} lez.</span>`;
     }
     const ultima = lezioni.length ? formatDate(lezioni[lezioni.length-1].ts) : 'Mai';
     return `<div class="card" onclick="showView('cliente','${c.id}')">
-      <div class="card-header">
-        <div><div class="card-name">${esc(c.nome)}</div><div class="card-meta">Ultima: ${ultima}</div></div>
-        ${badgeHtml}
-      </div>${barHtml}
+      <div class="card-header"><div><div class="card-name">${esc(c.nome)}</div><div class="card-meta">Ultima: ${ultima}</div></div>${badgeHtml}</div>${barHtml}
     </div>`;
   }).join('');
+  container.innerHTML = html;
 }
 
 // ── CLIENTE DETAIL ──
 function renderClienteDetail(id) {
   const c = clientiCache.find(x => x.id === id);
   if (!c) { showView('clienti'); return; }
-  const lezioni = lezioniCache.filter(l => l.cliente_id === id).slice().sort((a,b) => new Date(b.ts) - new Date(a.ts));
-  const totFatte = lezioni.length;
 
-  let carnetSection = '';
-  const questoMese = lezioni.filter(l => isSameMonth(l.ts)).length;
-  if (c.carnet_on) {
-    const rimaste = c.carnet_tot - totFatte;
-    const pct = Math.min(100, (totFatte / c.carnet_tot) * 100);
-    const color = rimaste <= 0 ? 'var(--red)' : rimaste <= 2 ? 'var(--orange)' : 'var(--green)';
-    carnetSection = `
-      <div class="section-title">Carnet</div>
-      <div class="stat-grid">
-        <div class="stat-box"><div class="stat-num">${totFatte}</div><div class="stat-label">Fatte</div></div>
-        <div class="stat-box"><div class="stat-num" style="color:${color}">${Math.max(0,rimaste)}</div><div class="stat-label">Rimaste</div></div>
-        <div class="stat-box"><div class="stat-num">${c.carnet_tot}</div><div class="stat-label">Totale carnet</div></div>
-        <div class="stat-box"><div class="stat-num">${questoMese}</div><div class="stat-label">Questo mese</div></div>
-      </div>
-      <div class="carnet-bar" style="height:8px;margin-bottom:16px;">
-        <div class="carnet-fill" style="width:${pct}%;background:${color}"></div>
-      </div>`;
-  } else {
-    carnetSection = `<div class="section-title">Lezioni</div>
-      <div class="stat-grid">
-        <div class="stat-box"><div class="stat-num">${totFatte}</div><div class="stat-label">Totale</div></div>
-        <div class="stat-box"><div class="stat-num">${questoMese}</div><div class="stat-label">Questo mese</div></div>
-      </div>`;
+  const tutteLezioni = lezioniCache.filter(l => l.cliente_id === id).sort((a,b) => new Date(b.ts) - new Date(a.ts));
+  const carnetAttivo = getCarnetAttivo(id);
+  const tuttiCarnet = carnetCache.filter(x => x.cliente_id === id).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+
+  // Stat box
+  const questoMese = tutteLezioni.filter(l => isSameMonth(l.ts)).length;
+  let statHtml = `<div class="stat-grid">
+    <div class="stat-box"><div class="stat-num">${tutteLezioni.length}</div><div class="stat-label">Totale</div></div>
+    <div class="stat-box"><div class="stat-num">${questoMese}</div><div class="stat-label">Questo mese</div></div>`;
+  if (carnetAttivo) {
+    const stats = getCarnetStats(carnetAttivo.id, id);
+    const color = stats.rimaste <= 0 ? 'var(--red)' : stats.rimaste <= 2 ? 'var(--orange)' : 'var(--green)';
+    statHtml += `<div class="stat-box"><div class="stat-num">${stats.usate}</div><div class="stat-label">Carnet attivo</div></div>
+    <div class="stat-box"><div class="stat-num" style="color:${color}">${Math.max(0,stats.rimaste)}</div><div class="stat-label">Rimaste</div></div>`;
+  }
+  statHtml += `</div>`;
+
+  // Filtri storico
+  const filterHtml = `<div class="filter-tabs">
+    <button class="filter-tab ${lessonFilter==='all'?'active':''}" onclick="setLessonFilter('all','${id}')">Tutto</button>
+    <button class="filter-tab ${lessonFilter==='month'?'active':''}" onclick="setLessonFilter('month','${id}')">Ultimo mese</button>
+    <button class="filter-tab ${lessonFilter==='range'?'active':''}" onclick="setLessonFilter('range','${id}')">Range date</button>
+  </div>
+  ${lessonFilter==='range' ? `<div style="display:flex;gap:10px;margin-bottom:16px">
+    <div style="flex:1"><label>Da</label><input type="date" id="range-from" value="${detailRangeFrom||''}" onchange="applyRange('${id}')"></div>
+    <div style="flex:1"><label>A</label><input type="date" id="range-to" value="${detailRangeTo||''}" onchange="applyRange('${id}')"></div>
+  </div>` : ''}`;
+
+  // Lezioni filtrate
+  let lezoniFiltrate = tutteLezioni;
+  if (lessonFilter === 'month') {
+    lezoniFiltrate = tutteLezioni.filter(l => isSameMonth(l.ts));
+  } else if (lessonFilter === 'range' && detailRangeFrom && detailRangeTo) {
+    const from = new Date(detailRangeFrom + 'T00:00:00');
+    const to = new Date(detailRangeTo + 'T23:59:59');
+    lezoniFiltrate = tutteLezioni.filter(l => new Date(l.ts) >= from && new Date(l.ts) <= to);
   }
 
-  const lessonList = lezioni.length
-    ? lezioni.map(l => `<div class="lesson-item"><div class="lesson-dot"></div><div><div class="lesson-date">${formatDateFull(l.ts)}</div>${l.note ? `<div class="lesson-note">${esc(l.note)}</div>` : ''}</div></div>`).join('')
-    : `<div style="color:var(--text3);font-size:13px;padding:12px 0;">Nessuna lezione ancora.</div>`;
+  const lessonList = lezoniFiltrate.length
+    ? lezoniFiltrate.map(l => {
+        const carnetLabel = l.carnet_id ? `<span style="font-size:11px;color:var(--accent);font-family:var(--font);margin-left:8px">CARNET</span>` : '';
+        return `<div class="lesson-item"><div class="lesson-dot"></div><div><div class="lesson-date">${formatDateFull(l.ts)}${carnetLabel}</div>${l.note?`<div class="lesson-note">${esc(l.note)}</div>`:''}</div></div>`;
+      }).join('')
+    : `<div style="color:var(--text3);font-size:13px;padding:12px 0">Nessuna lezione nel periodo.</div>`;
+
+  // Carnet section
+  let carnetHtml = '';
+  if (tuttiCarnet.length > 0) {
+    carnetHtml = tuttiCarnet.map(cn => {
+      const stats = getCarnetStats(cn.id, id);
+      const isAttivo = carnetAttivo && carnetAttivo.id === cn.id;
+      const pct = Math.min(100, (stats.usate / cn.totale) * 100);
+      const color = stats.rimaste <= 0 ? 'var(--red)' : stats.rimaste <= 2 ? 'var(--orange)' : 'var(--green)';
+      const lezioniCarnet = lezioniCache.filter(l => l.carnet_id === cn.id).sort((a,b) => new Date(b.ts) - new Date(a.ts));
+      const lezioniHtml = lezioniCarnet.length
+        ? lezioniCarnet.map(l => `<div class="lesson-item" style="padding:8px 0"><div class="lesson-dot" style="width:6px;height:6px;margin-top:4px"></div><div><div class="lesson-date" style="font-size:12px">${formatDateFull(l.ts)}</div>${l.note?`<div class="lesson-note">${esc(l.note)}</div>`:''}</div></div>`).join('')
+        : `<div style="color:var(--text3);font-size:12px;padding:8px 0">Nessuna lezione in questo carnet.</div>`;
+
+      return `<div class="carnet-card ${isAttivo?'active-carnet':''}">
+        <div class="carnet-card-header">
+          <div>
+            <div class="carnet-card-title">${cn.totale} lezioni ${isAttivo?'<span style="color:var(--accent);font-size:11px;font-family:var(--font)">● ATTIVO</span>':'<span style="color:var(--text3);font-size:11px;font-family:var(--font)">COMPLETATO</span>'}</div>
+            <div class="carnet-card-date">${formatDate(cn.created_at)}${cn.note?' · '+esc(cn.note):''}</div>
+          </div>
+          <div style="text-align:right">
+            <div style="font-family:var(--font);font-size:20px;color:${color}">${stats.usate}/${cn.totale}</div>
+            <div style="font-size:11px;color:var(--text2)">${Math.max(0,stats.rimaste)} rimast${stats.rimaste===1?'a':'e'}</div>
+          </div>
+        </div>
+        <div class="carnet-bar" style="height:6px;margin-bottom:12px"><div class="carnet-fill" style="width:${pct}%;background:${color}"></div></div>
+        <details style="cursor:pointer">
+          <summary style="font-size:12px;color:var(--text2);font-family:var(--font);letter-spacing:0.05em;list-style:none;padding:4px 0">▶ LEZIONI (${lezioniCarnet.length})</summary>
+          <div style="margin-top:8px">${lezioniHtml}</div>
+        </details>
+        ${isAttivo ? `<button class="btn btn-danger btn-sm" style="margin-top:12px;width:auto" onclick="confirmEliminaCarnet('${cn.id}','${id}')">Elimina carnet</button>` : ''}
+      </div>`;
+    }).join('');
+  } else {
+    carnetHtml = `<div style="color:var(--text3);font-size:13px;padding:12px 0">Nessun carnet ancora.</div>`;
+  }
 
   const qrId = 'qr-det';
   document.getElementById('view-cliente').innerHTML = `
     <div class="section-title">QR CODE</div>
     <div class="qr-wrapper"><div id="${qrId}"></div></div>
-    <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:16px;font-family:var(--font);">${c.id}</div>
-    <div class="btn-row" style="margin-bottom:24px;">
-      <button class="btn btn-secondary btn-sm" onclick="openModalModifica('${id}')">Modifica</button>
+    <div style="text-align:center;font-size:11px;color:var(--text3);margin-bottom:16px;font-family:var(--font)">${c.id}</div>
+    <div class="btn-row" style="margin-bottom:24px;flex-wrap:wrap;gap:8px">
+      <button class="btn btn-secondary btn-sm" onclick="openModalModificaCliente('${id}')">Modifica</button>
       <button class="btn btn-secondary btn-sm" onclick="downloadQR('${qrId}','${esc(c.nome)}')">Condividi QR</button>
       <button class="btn btn-secondary btn-sm" onclick="openExportModal('${id}')">Esporta</button>
-      <button class="btn btn-danger btn-sm" onclick="confirmDelete('${id}')">Elimina</button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteCliente('${id}')">Elimina</button>
     </div>
-    ${carnetSection}
+    ${statHtml}
+    <div class="section-title" style="display:flex;justify-content:space-between;align-items:center">
+      <span>Carnet</span>
+      <button class="btn btn-primary btn-sm" onclick="openModalNuovoCarnet('${id}')">+ Aggiungi</button>
+    </div>
+    ${carnetHtml}
     <div class="section-title">Storico lezioni</div>
+    ${filterHtml}
     ${lessonList}
-    <div style="height:20px;"></div>`;
+    <div style="height:20px"></div>`;
 
   setTimeout(() => {
     const el = document.getElementById(qrId);
@@ -767,28 +658,132 @@ function renderClienteDetail(id) {
   }, 50);
 }
 
+function setLessonFilter(filter, id) {
+  lessonFilter = filter;
+  if (filter !== 'range') { detailRangeFrom = null; detailRangeTo = null; }
+  renderClienteDetail(id);
+  // Scroll to storico
+  setTimeout(() => { const el = document.querySelector('.filter-tabs'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 100);
+}
+
+function applyRange(id) {
+  detailRangeFrom = document.getElementById('range-from')?.value || null;
+  detailRangeTo = document.getElementById('range-to')?.value || null;
+  renderClienteDetail(id);
+}
+
+// ── MODAL CLIENTE ──
+function openModalNuovoCliente() {
+  editingClienteId = null;
+  document.getElementById('modal-cliente-title').textContent = 'Nuovo cliente';
+  document.getElementById('f-nome').value = '';
+  document.getElementById('f-tel').value = '';
+  document.getElementById('f-nota').value = '';
+  openModal('modal-cliente');
+}
+function openModalModificaCliente(id) {
+  const c = clientiCache.find(x => x.id === id);
+  if (!c) return;
+  editingClienteId = id;
+  document.getElementById('modal-cliente-title').textContent = 'Modifica cliente';
+  document.getElementById('f-nome').value = c.nome;
+  document.getElementById('f-tel').value = c.tel || '';
+  document.getElementById('f-nota').value = c.nota || '';
+  openModal('modal-cliente');
+}
+async function salvaCliente() {
+  const nome = document.getElementById('f-nome').value.trim();
+  if (!nome) { toast('Inserisci il nome'); return; }
+  const btn = document.getElementById('btn-salva-cliente');
+  btn.disabled = true; btn.textContent = '...';
+  const payload = { nome, tel: document.getElementById('f-tel').value.trim(), nota: document.getElementById('f-nota').value.trim(), user_id: currentUser.id };
+  let error, data;
+  if (editingClienteId) {
+    ({ data, error } = await sb.from('clienti').update(payload).eq('id', editingClienteId).select().single());
+    if (!error) { const idx = clientiCache.findIndex(c => c.id === editingClienteId); if (idx >= 0) clientiCache[idx] = data; toast('Cliente aggiornato'); }
+  } else {
+    ({ data, error } = await sb.from('clienti').insert(payload).select().single());
+    if (!error) { clientiCache.push(data); clientiCache.sort((a,b) => a.nome.localeCompare(b.nome)); toast('Cliente aggiunto'); }
+  }
+  btn.disabled = false; btn.textContent = 'Salva';
+  if (error) { toast('Errore: ' + error.message); return; }
+  updateHeaderSubtitle();
+  closeModal('modal-cliente');
+  if (currentView === 'clienti') renderClienti();
+  else if (currentView === 'cliente') renderClienteDetail(editingClienteId || data.id);
+}
+
+// ── MODAL CARNET ──
+function openModalNuovoCarnet(clienteId) {
+  editingCarnetClienteId = clienteId;
+  document.getElementById('modal-carnet-title').textContent = 'Nuovo carnet';
+  document.getElementById('f-carnet-tot').value = '10';
+  document.getElementById('f-carnet-nota').value = '';
+  openModal('modal-carnet');
+}
+async function salvaCarnet() {
+  const totale = parseInt(document.getElementById('f-carnet-tot').value);
+  if (!totale || totale < 1) { toast('Inserisci un numero valido'); return; }
+  const btn = document.getElementById('btn-salva-carnet');
+  btn.disabled = true; btn.textContent = '...';
+  const payload = { cliente_id: editingCarnetClienteId, user_id: currentUser.id, totale, note: document.getElementById('f-carnet-nota').value.trim(), created_at: new Date().toISOString() };
+  const { data, error } = await sb.from('carnet').insert(payload).select().single();
+  btn.disabled = false; btn.textContent = 'Aggiungi carnet';
+  if (error) { toast('Errore: ' + error.message); return; }
+  carnetCache.push(data);
+  toast('Carnet aggiunto');
+  closeModal('modal-carnet');
+  renderClienteDetail(editingCarnetClienteId);
+  renderClienti();
+}
+function confirmEliminaCarnet(carnetId, clienteId) {
+  document.getElementById('confirm-title').textContent = 'Elimina carnet';
+  document.getElementById('confirm-text').textContent = 'Vuoi eliminare questo carnet? Le lezioni associate non verranno eliminate ma perderanno il collegamento al carnet.';
+  document.getElementById('confirm-action-btn').textContent = 'Elimina';
+  document.getElementById('confirm-action-btn').onclick = async () => {
+    await sb.from('carnet').delete().eq('id', carnetId);
+    carnetCache = carnetCache.filter(c => c.id !== carnetId);
+    lezioniCache.forEach(l => { if (l.carnet_id === carnetId) l.carnet_id = null; });
+    closeModal('modal-confirm');
+    toast('Carnet eliminato');
+    renderClienteDetail(clienteId);
+    renderClienti();
+  };
+  openModal('modal-confirm');
+}
+
+// ── DELETE CLIENTE ──
+function confirmDeleteCliente(id) {
+  const c = clientiCache.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('confirm-title').textContent = 'Elimina cliente';
+  document.getElementById('confirm-text').textContent = `Vuoi eliminare "${c.nome}"? Verranno cancellate anche tutte le sue lezioni e i suoi carnet.`;
+  document.getElementById('confirm-action-btn').textContent = 'Elimina';
+  document.getElementById('confirm-action-btn').onclick = async () => {
+    await sb.from('clienti').delete().eq('id', id);
+    clientiCache = clientiCache.filter(c => c.id !== id);
+    lezioniCache = lezioniCache.filter(l => l.cliente_id !== id);
+    carnetCache = carnetCache.filter(c => c.cliente_id !== id);
+    updateHeaderSubtitle(); updateStats();
+    closeModal('modal-confirm'); toast('Cliente eliminato'); showView('clienti');
+  };
+  openModal('modal-confirm');
+}
+
+// ── QR ──
 async function downloadQR(qrId, nome) {
   const canvas = document.querySelector('#' + qrId + ' canvas');
   if (!canvas) { toast('QR non trovato'); return; }
   const dataUrl = canvas.toDataURL('image/png');
   const filename = 'qr-' + nome.replace(/\s+/g,'_') + '.png';
-
-  // Prova Web Share API (mobile)
   if (navigator.share && navigator.canShare) {
     try {
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], filename, { type: 'image/png' });
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'QR ' + nome });
-        return;
-      }
-    } catch(e) { /* fallback */ }
+      if (navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'QR ' + nome }); return; }
+    } catch(e) {}
   }
-  // Fallback: download
-  const a = document.createElement('a');
-  a.href = dataUrl;
-  a.download = filename;
-  a.click();
+  const a = document.createElement('a'); a.href = dataUrl; a.download = filename; a.click();
   toast('QR salvato');
 }
 
@@ -798,84 +793,46 @@ function startScanner() {
   document.getElementById('scan-result').classList.remove('show');
   document.getElementById('scanner-container').style.display = '';
   scanClienteId = null;
-
   const video = document.getElementById('qr-video');
   const status = document.getElementById('scan-status');
-  const dbg = document.getElementById('scan-debug');
-
-  navigator.mediaDevices.getUserMedia({
-    video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
-  }).then(stream => {
-    video.srcObject = stream;
-    video.play();
-    scannerActive = true;
-    if (status) status.textContent = 'PUNTA IL QR CODE VERSO LA FOTOCAMERA';
-    if (dbg) dbg.textContent = 'Scanner attivo. Clienti: ' + clientiCache.length;
-
-    if ('BarcodeDetector' in window) {
-      if (dbg) dbg.textContent += ' | BarcodeDetector: SI';
-      const detector = new BarcodeDetector({ formats: ['qr_code'] });
-      scanWithDetector(detector, video, dbg);
-    } else {
-      if (dbg) dbg.textContent += ' | BarcodeDetector: NO, uso jsQR';
-      requestAnimationFrame(scanFrame);
-    }
-  }).catch(err => {
-    if (status) status.textContent = 'FOTOCAMERA NON DISPONIBILE';
-    if (dbg) dbg.textContent = err.message;
-  });
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } } })
+    .then(stream => {
+      video.srcObject = stream; video.play(); scannerActive = true;
+      if (status) status.textContent = 'PUNTA IL QR CODE VERSO LA FOTOCAMERA';
+      if ('BarcodeDetector' in window) {
+        const detector = new BarcodeDetector({ formats: ['qr_code'] });
+        scanWithDetector(detector, video);
+      } else {
+        requestAnimationFrame(scanFrame);
+      }
+    }).catch(err => { if (status) status.textContent = 'FOTOCAMERA NON DISPONIBILE: ' + err.message; });
 }
-
-async function scanWithDetector(detector, video, dbg) {
+async function scanWithDetector(detector, video) {
   if (!scannerActive) return;
   try {
     const codes = await detector.detect(video);
-    if (codes.length > 0) {
-      const raw = codes[0].rawValue;
-      if (dbg) dbg.textContent = 'DECODED: ' + raw + ' | IDS: ' + clientiCache.map(c=>c.id).join(', ');
-      onScanSuccess(raw.trim());
-      return;
-    }
+    if (codes.length > 0) { onScanSuccess(codes[0].rawValue.trim()); return; }
   } catch(e) {}
-  setTimeout(() => scanWithDetector(detector, video, dbg), 200);
+  setTimeout(() => scanWithDetector(detector, video), 200);
 }
-
 function scanFrame() {
   if (!scannerActive) return;
   const video = document.getElementById('qr-video');
   const canvas = document.getElementById('qr-canvas');
-  const dbg = document.getElementById('scan-debug');
-  if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) {
-    requestAnimationFrame(scanFrame);
-    return;
-  }
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
+  if (!video || video.readyState !== video.HAVE_ENOUGH_DATA) { requestAnimationFrame(scanFrame); return; }
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
   const ctx = canvas.getContext('2d');
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'attemptBoth' });
-  if (code && code.data) {
-    if (dbg) dbg.textContent = 'DECODED: ' + code.data + ' | IDS: ' + clientiCache.map(c=>c.id).join(', ');
-    onScanSuccess(code.data.trim());
-  } else {
-    requestAnimationFrame(scanFrame);
-  }
+  if (code && code.data) { onScanSuccess(code.data.trim()); } else { requestAnimationFrame(scanFrame); }
 }
-
 function stopScanner() {
   scannerActive = false;
   const video = document.getElementById('qr-video');
-  if (video && video.srcObject) {
-    video.srcObject.getTracks().forEach(t => t.stop());
-    video.srcObject = null;
-  }
+  if (video && video.srcObject) { video.srcObject.getTracks().forEach(t => t.stop()); video.srcObject = null; }
 }
-
-
 function onScanSuccess(decoded) {
-  const dbg = document.getElementById('scan-debug');
-  if (dbg) dbg.textContent = 'DECODED: ' + decoded + ' | CLIENTI: ' + clientiCache.length + ' | IDS: ' + clientiCache.map(c=>c.id).join(', ');
   const cliente = clientiCache.find(c => c.id === decoded);
   if (!cliente) { toast('QR non riconosciuto'); return; }
   stopScanner();
@@ -883,32 +840,29 @@ function onScanSuccess(decoded) {
   document.getElementById('sr-nome').textContent = cliente.nome;
   document.getElementById('sr-data').textContent = formatDateFull(new Date().toISOString());
   document.getElementById('sr-note').value = '';
-  const lezioni = lezioniCache.filter(l => l.cliente_id === cliente.id);
+  const carnetAttivo = getCarnetAttivo(cliente.id);
   const carnetRow = document.getElementById('sr-carnet-row');
-  if (cliente.carnet_on) {
-    const fatte = lezioni.length;
-    const rimaste = cliente.carnet_tot - fatte;
-    document.getElementById('sr-carnet').innerHTML = `${fatte}/${cliente.carnet_tot} — <strong style="color:${rimaste<=0?'var(--red)':rimaste<=2?'var(--orange)':'var(--green)'}">${Math.max(0,rimaste)} rimast${rimaste===1?'a':'e'}</strong>`;
+  if (carnetAttivo) {
+    const stats = getCarnetStats(carnetAttivo.id, cliente.id);
+    const color = stats.rimaste <= 1 ? 'var(--red)' : stats.rimaste <= 2 ? 'var(--orange)' : 'var(--green)';
+    document.getElementById('sr-carnet').innerHTML = `${stats.usate}/${carnetAttivo.totale} — <strong style="color:${color}">${Math.max(0,stats.rimaste)} rimast${stats.rimaste===1?'a':'e'}</strong>`;
     carnetRow.style.display = '';
-  } else {
-    carnetRow.style.display = 'none';
-  }
+  } else { carnetRow.style.display = 'none'; }
   document.getElementById('scan-result').classList.add('show');
   document.getElementById('scanner-container').style.display = 'none';
 }
-
 async function confermaScan() {
   if (!scanClienteId) return;
   const note = document.getElementById('sr-note').value.trim();
-  const { data, error } = await sb.from('lezioni').insert({ cliente_id: scanClienteId, user_id: currentUser.id, note, ts: new Date().toISOString() }).select().single();
+  const carnetAttivo = getCarnetAttivo(scanClienteId);
+  const payload = { cliente_id: scanClienteId, user_id: currentUser.id, note, ts: new Date().toISOString(), carnet_id: carnetAttivo ? carnetAttivo.id : null };
+  const { data, error } = await sb.from('lezioni').insert(payload).select().single();
   if (error) { toast('Errore salvataggio'); return; }
   lezioniCache.push(data);
-  updateHeaderSubtitle();
   updateStats();
   toast('Lezione registrata ✓');
   annullaScan();
 }
-
 function annullaScan() {
   scanClienteId = null;
   document.getElementById('scan-result').classList.remove('show');
@@ -917,194 +871,98 @@ function annullaScan() {
   setTimeout(startScanner, 200);
 }
 
-// ── MODAL CLIENTE ──
-function openModalNuovo() {
-  editingId = null;
-  document.getElementById('modal-title-text').textContent = 'Nuovo cliente';
-  document.getElementById('f-nome').value = '';
-  document.getElementById('f-tel').value = '';
-  document.getElementById('f-note').value = '';
-  document.getElementById('f-carnet-on').checked = false;
-  document.getElementById('f-carnet-tot').value = '10';
-  document.getElementById('carnet-fields').style.display = 'none';
-  openModal('modal-cliente');
-}
-
-function openModalModifica(id) {
-  const c = clientiCache.find(x => x.id === id);
-  if (!c) return;
-  editingId = id;
-  document.getElementById('modal-title-text').textContent = 'Modifica cliente';
-  document.getElementById('f-nome').value = c.nome;
-  document.getElementById('f-tel').value = c.tel || '';
-  document.getElementById('f-note').value = c.nota || '';
-  document.getElementById('f-carnet-on').checked = c.carnet_on || false;
-  document.getElementById('f-carnet-tot').value = c.carnet_tot || 10;
-  document.getElementById('carnet-fields').style.display = c.carnet_on ? 'block' : 'none';
-  openModal('modal-cliente');
-}
-
-function toggleCarnetFields() {
-  const on = document.getElementById('f-carnet-on').checked;
-  const el = document.getElementById('carnet-fields');
-  el.style.display = on ? 'block' : 'none';
-  if (on) setTimeout(() => { el.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); document.getElementById('f-carnet-tot').focus(); }, 50);
-}
-
-async function salvaCliente() {
-  const nome = document.getElementById('f-nome').value.trim();
-  if (!nome) { toast('Inserisci il nome'); return; }
-  const btn = document.getElementById('btn-salva-cliente');
-  btn.disabled = true; btn.textContent = '...';
-
-  const payload = {
-    nome,
-    tel: document.getElementById('f-tel').value.trim(),
-    nota: document.getElementById('f-note').value.trim(),
-    carnet_on: document.getElementById('f-carnet-on').checked,
-    carnet_tot: parseInt(document.getElementById('f-carnet-tot').value) || 10,
-    user_id: currentUser.id
-  };
-
-  let error, data;
-  if (editingId) {
-    ({ data, error } = await sb.from('clienti').update(payload).eq('id', editingId).select().single());
-    if (!error) { const idx = clientiCache.findIndex(c => c.id === editingId); if (idx >= 0) clientiCache[idx] = data; toast('Cliente aggiornato'); }
-  } else {
-    ({ data, error } = await sb.from('clienti').insert(payload).select().single());
-    if (!error) { clientiCache.push(data); clientiCache.sort((a,b) => a.nome.localeCompare(b.nome)); toast('Cliente aggiunto'); }
-  }
-
-  btn.disabled = false; btn.textContent = 'Salva';
-  if (error) { toast('Errore: ' + error.message); return; }
-
-  updateHeaderSubtitle();
-  closeModal('modal-cliente');
-  if (currentView === 'clienti') renderClienti();
-  else if (currentView === 'cliente') renderClienteDetail(editingId);
-}
-
-function confirmDelete(id) {
-  const c = clientiCache.find(x => x.id === id);
-  if (!c) return;
-  document.getElementById('confirm-title').textContent = 'Elimina cliente';
-  document.getElementById('confirm-text').textContent = `Vuoi eliminare "${c.nome}"? Verranno cancellate anche tutte le sue lezioni.`;
-  document.getElementById('confirm-action-btn').textContent = 'Elimina';
-  document.getElementById('confirm-action-btn').onclick = () => { eliminaCliente(id); closeModal('modal-confirm'); };
-  openModal('modal-confirm');
-}
-
-async function eliminaCliente(id) {
-  const { error } = await sb.from('clienti').delete().eq('id', id);
-  if (error) { toast('Errore eliminazione'); return; }
-  clientiCache = clientiCache.filter(c => c.id !== id);
-  lezioniCache = lezioniCache.filter(l => l.cliente_id !== id);
-  updateHeaderSubtitle(); updateStats();
-  toast('Cliente eliminato');
-  showView('clienti');
-}
-
-function confirmReset() {
-  document.getElementById('confirm-title').textContent = 'Reset completo';
-  document.getElementById('confirm-text').textContent = 'Verranno eliminati TUTTI i clienti e TUTTE le lezioni. Impossibile annullare.';
-  document.getElementById('confirm-action-btn').textContent = 'Reset';
-  document.getElementById('confirm-action-btn').onclick = async () => {
-    await sb.from('lezioni').delete().eq('user_id', currentUser.id);
-    await sb.from('clienti').delete().eq('user_id', currentUser.id);
-    clientiCache = []; lezioniCache = [];
-    updateHeaderSubtitle(); updateStats();
-    closeModal('modal-confirm');
-    toast('Dati eliminati');
-    renderClienti();
-  };
-  openModal('modal-confirm');
-}
-
-// ── EXPORT / IMPORT ──
-async function esportaCSV() {
-  if (lezioniCache.length === 0) { toast('Nessuna lezione da esportare'); return; }
-  const rows = [['ID Lezione','Cliente','Telefono','Data','Ora','Carnet Tot','Lezioni Fatte','Rimaste','Note']];
-  const sorted = [...lezioniCache].sort((a,b) => new Date(a.ts) - new Date(b.ts));
-  sorted.forEach(l => {
-    const c = clientiCache.find(x => x.id === l.cliente_id);
-    if (!c) return;
-    const lezioniC = lezioniCache.filter(x => x.cliente_id === c.id && new Date(x.ts) <= new Date(l.ts)).length;
-    const d = new Date(l.ts);
-    rows.push([l.id, c.nome, c.tel||'', d.toLocaleDateString('it-IT'), d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}), c.carnet_on?c.carnet_tot:'', c.carnet_on?lezioniC:'', c.carnet_on?Math.max(0,c.carnet_tot-lezioniC):'', l.note||'']);
-  });
-  downloadCSV(rows, 'lezioni-report-' + dateTag() + '.csv');
-  toast('CSV esportato');
-}
-
+// ── EXPORT ──
 function openExportModal(clienteId) {
-  // Popola select clienti
   const sel = document.getElementById('exp-cliente');
   sel.innerHTML = '<option value="">Tutti i clienti</option>';
-  clientiCache.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c.id;
-    opt.textContent = c.nome;
-    if (clienteId && c.id === clienteId) opt.selected = true;
-    sel.appendChild(opt);
-  });
-  // Default range: primo giorno mese corrente → oggi
+  clientiCache.forEach(c => { const opt = document.createElement('option'); opt.value = c.id; opt.textContent = c.nome; if (clienteId && c.id === clienteId) opt.selected = true; sel.appendChild(opt); });
   const now = new Date();
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-  document.getElementById('exp-from').value = firstDay.toISOString().slice(0,10);
+  document.getElementById('exp-from').value = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0,10);
   document.getElementById('exp-to').value = now.toISOString().slice(0,10);
   openModal('modal-export');
 }
-
 async function esportaCSVFiltrato() {
   const clienteId = document.getElementById('exp-cliente').value;
   const fromVal = document.getElementById('exp-from').value;
   const toVal = document.getElementById('exp-to').value;
-
   const from = fromVal ? new Date(fromVal + 'T00:00:00') : null;
   const to = toVal ? new Date(toVal + 'T23:59:59') : null;
-
   let lezioni = [...lezioniCache].sort((a,b) => new Date(a.ts) - new Date(b.ts));
   if (clienteId) lezioni = lezioni.filter(l => l.cliente_id === clienteId);
   if (from) lezioni = lezioni.filter(l => new Date(l.ts) >= from);
   if (to) lezioni = lezioni.filter(l => new Date(l.ts) <= to);
-
   if (lezioni.length === 0) { toast('Nessuna lezione nel periodo'); return; }
-
-  const rows = [['Cliente','Telefono','Data','Ora','Carnet Tot','Lezioni Fatte','Rimaste','Note']];
+  const rows = [['Cliente','Telefono','Data','Ora','Carnet','Lezioni carnet','Usate','Rimaste','Note']];
   lezioni.forEach(l => {
     const c = clientiCache.find(x => x.id === l.cliente_id);
     if (!c) return;
-    const lezioniFinoAd = lezioniCache.filter(x => x.cliente_id === c.id && new Date(x.ts) <= new Date(l.ts)).length;
+    let carnetInfo = ['','','',''];
+    if (l.carnet_id) {
+      const cn = carnetCache.find(x => x.id === l.carnet_id);
+      if (cn) {
+        const usate = lezioniCache.filter(x => x.carnet_id === cn.id && new Date(x.ts) <= new Date(l.ts)).length;
+        carnetInfo = [formatDate(cn.created_at), cn.totale, usate, Math.max(0, cn.totale - usate)];
+      }
+    }
     const d = new Date(l.ts);
-    rows.push([
-      c.nome, c.tel||'',
-      d.toLocaleDateString('it-IT'),
-      d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}),
-      c.carnet_on ? c.carnet_tot : '',
-      c.carnet_on ? lezioniFinoAd : '',
-      c.carnet_on ? Math.max(0, c.carnet_tot - lezioniFinoAd) : '',
-      l.note||''
-    ]);
+    rows.push([c.nome, c.tel||'', d.toLocaleDateString('it-IT'), d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}), ...carnetInfo, l.note||'']);
   });
-
-  const nomeFile = clienteId
-    ? 'lezioni-' + (clientiCache.find(x=>x.id===clienteId)?.nome||'cliente').replace(/\s+/g,'_') + '-' + dateTag()
-    : 'lezioni-tutti-' + dateTag();
+  const nomeFile = clienteId ? 'lezioni-' + (clientiCache.find(x=>x.id===clienteId)?.nome||'').replace(/\s+/g,'_') + '-' + dateTag() : 'lezioni-tutti-' + dateTag();
   downloadCSV(rows, nomeFile + '.csv');
   closeModal('modal-export');
   toast('CSV esportato');
 }
-
 async function esportaClientiCSV() {
   if (clientiCache.length === 0) { toast('Nessun cliente'); return; }
-  const rows = [['Nome','Telefono','Note','Carnet','Tot Lezioni Carnet','Lezioni Fatte','Rimaste','Prima Lezione','Ultima Lezione']];
+  const rows = [['Nome','Telefono','Note','Carnet attivo','Lezioni totali','Prima lezione','Ultima lezione']];
   clientiCache.forEach(c => {
     const lezioni = lezioniCache.filter(l => l.cliente_id === c.id).sort((a,b) => new Date(a.ts)-new Date(b.ts));
-    const fatte = lezioni.length;
-    rows.push([c.nome, c.tel||'', c.nota||'', c.carnet_on?'Sì':'No', c.carnet_on?c.carnet_tot:'', fatte, c.carnet_on?Math.max(0,c.carnet_tot-fatte):'', lezioni.length?new Date(lezioni[0].ts).toLocaleDateString('it-IT'):'', lezioni.length?new Date(lezioni[lezioni.length-1].ts).toLocaleDateString('it-IT'):'']);
+    const ca = getCarnetAttivo(c.id);
+    const caLabel = ca ? `${getCarnetStats(ca.id,c.id).usate}/${ca.totale}` : 'No';
+    rows.push([c.nome, c.tel||'', c.nota||'', caLabel, lezioni.length, lezioni.length?new Date(lezioni[0].ts).toLocaleDateString('it-IT'):'', lezioni.length?new Date(lezioni[lezioni.length-1].ts).toLocaleDateString('it-IT'):'']);
   });
   downloadCSV(rows, 'clienti-' + dateTag() + '.csv');
   toast('CSV clienti esportato');
+}
+async function esportaBackup() {
+  const backup = { clienti: clientiCache, lezioni: lezioniCache, carnet: carnetCache, exportedAt: new Date().toISOString() };
+  downloadBlob(JSON.stringify(backup, null, 2), 'backup-lezioni-' + dateTag() + '.json', 'application/json');
+  toast('Backup esportato');
+}
+async function importaBackup(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.clienti || !imported.lezioni) throw new Error('Formato non valido');
+      document.getElementById('confirm-title').textContent = 'Ripristina backup';
+      document.getElementById('confirm-text').textContent = `Importare ${imported.clienti.length} clienti, ${imported.lezioni.length} lezioni e ${(imported.carnet||[]).length} carnet?`;
+      document.getElementById('confirm-action-btn').textContent = 'Ripristina';
+      document.getElementById('confirm-action-btn').onclick = async () => {
+        closeModal('modal-confirm'); toast('Importazione in corso...');
+        for (const c of imported.clienti) await sb.from('clienti').upsert({ ...c, user_id: currentUser.id });
+        for (const cn of (imported.carnet||[])) await sb.from('carnet').upsert({ ...cn, user_id: currentUser.id });
+        for (const l of imported.lezioni) await sb.from('lezioni').upsert({ ...l, user_id: currentUser.id });
+        await loadData(); renderClienti(); toast('Backup ripristinato ✓');
+      };
+      openModal('modal-confirm');
+    } catch { toast('File non valido'); }
+  };
+  reader.readAsText(file); event.target.value = '';
+}
+function confirmReset() {
+  document.getElementById('confirm-title').textContent = 'Reset completo';
+  document.getElementById('confirm-text').textContent = 'Verranno eliminati TUTTI i dati. Impossibile annullare.';
+  document.getElementById('confirm-action-btn').textContent = 'Reset';
+  document.getElementById('confirm-action-btn').onclick = async () => {
+    await sb.from('lezioni').delete().eq('user_id', currentUser.id);
+    await sb.from('carnet').delete().eq('user_id', currentUser.id);
+    await sb.from('clienti').delete().eq('user_id', currentUser.id);
+    clientiCache = []; lezioniCache = []; carnetCache = [];
+    updateHeaderSubtitle(); updateStats(); closeModal('modal-confirm'); toast('Dati eliminati'); renderClienti();
+  };
+  openModal('modal-confirm');
 }
 
 function downloadCSV(rows, filename) {
@@ -1112,45 +970,6 @@ function downloadCSV(rows, filename) {
   const csv = bom + rows.map(r => r.map(v => '"' + String(v).replace(/"/g,'""') + '"').join(';')).join('\n');
   downloadBlob(csv, filename, 'text/csv;charset=utf-8');
 }
-
-async function esportaBackup() {
-  const backup = { clienti: clientiCache, lezioni: lezioniCache, exportedAt: new Date().toISOString() };
-  downloadBlob(JSON.stringify(backup, null, 2), 'backup-lezioni-' + dateTag() + '.json', 'application/json');
-  toast('Backup esportato');
-}
-
-async function importaBackup(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async e => {
-    try {
-      const imported = JSON.parse(e.target.result);
-      if (!imported.clienti || !imported.lezioni) throw new Error('Formato non valido');
-      document.getElementById('confirm-title').textContent = 'Ripristina backup';
-      document.getElementById('confirm-text').textContent = `Stai per importare ${imported.clienti.length} clienti e ${imported.lezioni.length} lezioni. I dati verranno aggiunti a quelli esistenti.`;
-      document.getElementById('confirm-action-btn').textContent = 'Ripristina';
-      document.getElementById('confirm-action-btn').onclick = async () => {
-        closeModal('modal-confirm');
-        toast('Importazione in corso...');
-        for (const c of imported.clienti) {
-          const { data } = await sb.from('clienti').upsert({ ...c, user_id: currentUser.id }).select().single();
-          if (data && !clientiCache.find(x => x.id === data.id)) clientiCache.push(data);
-        }
-        for (const l of imported.lezioni) {
-          const { data } = await sb.from('lezioni').upsert({ ...l, user_id: currentUser.id }).select().single();
-          if (data && !lezioniCache.find(x => x.id === data.id)) lezioniCache.push(data);
-        }
-        updateHeaderSubtitle(); updateStats();
-        toast('Backup ripristinato ✓');
-      };
-      openModal('modal-confirm');
-    } catch { toast('File non valido'); }
-  };
-  reader.readAsText(file);
-  event.target.value = '';
-}
-
 function downloadBlob(content, filename, type) {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
@@ -1158,36 +977,24 @@ function downloadBlob(content, filename, type) {
   URL.revokeObjectURL(url);
 }
 
-// ── MODAL HELPERS ──
+// ── MODALS ──
 function openModal(id) {
   document.getElementById(id).classList.add('open');
-  document.getElementById(id).addEventListener('click', function bgClick(e) {
-    if (e.target === this) { closeModal(id); this.removeEventListener('click', bgClick); }
-  });
+  document.getElementById(id).addEventListener('click', function bgClick(e) { if (e.target === this) { closeModal(id); this.removeEventListener('click', bgClick); } });
 }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 // ── DATE HELPERS ──
-function formatDate(ts) { return new Date(ts).toLocaleDateString('it-IT', {day:'2-digit',month:'2-digit',year:'numeric'}); }
-function formatDateFull(ts) {
-  const d = new Date(ts);
-  return d.toLocaleDateString('it-IT', {weekday:'short',day:'2-digit',month:'short',year:'numeric'}) + ' ' + d.toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'});
-}
+function formatDate(ts) { return new Date(ts).toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+function formatDateFull(ts) { const d = new Date(ts); return d.toLocaleDateString('it-IT',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}) + ' ' + d.toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'}); }
 function isSameMonth(ts) { const n = new Date(), d = new Date(ts); return n.getMonth()===d.getMonth()&&n.getFullYear()===d.getFullYear(); }
 function dateTag() { return new Date().toISOString().slice(0,10); }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ── TOAST ──
 let toastTimer;
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
-}
+function toast(msg) { const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2500); }
 
-// ── START ──
 init();
 </script>
 </body>
