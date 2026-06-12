@@ -755,7 +755,7 @@ function renderClienteDetail(id) {
 
   setTimeout(() => {
     const el = document.getElementById(qrId);
-    if (el) { el.innerHTML = ''; new QRCode(el, { text: c.id, width: 180, height: 180, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H }); }
+    if (el) { el.innerHTML = ''; new QRCode(el, { text: c.id, width: 200, height: 200, colorDark: '#000000', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M }); }
   }, 50);
 }
 
@@ -798,8 +798,6 @@ function startScanner() {
   scanner = new Html5Qrcode('reader');
   const config = {
     fps: 15,
-    qrbox: { width: boxSize, height: boxSize },
-    aspectRatio: 1.0,
     disableFlip: false,
     experimentalFeatures: { useBarCodeDetectorIfSupported: true }
   };
