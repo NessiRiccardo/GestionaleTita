@@ -249,6 +249,8 @@ select option { background: #1a1a1a; }
         <div id="reader"></div>
         <div class="scan-overlay"><div class="scan-frame"><span></span></div></div>
       </div>
+      <div id="scan-status" style="text-align:center;font-family:var(--font);font-size:12px;color:var(--text3);letter-spacing:0.08em;margin-bottom:12px;">AVVIO FOTOCAMERA...</div>
+      <div id="scan-debug" style="font-family:var(--font);font-size:11px;color:var(--text3);background:var(--bg3);border-radius:var(--radius);padding:10px;margin-bottom:12px;min-height:40px;word-break:break-all;"></div>
       <div id="scan-result">
         <div class="scan-client-name" id="sr-nome"></div>
         <div class="scan-info-row">
@@ -788,11 +790,36 @@ function startScanner() {
   document.getElementById('scan-result').classList.remove('show');
   document.getElementById('scanner-container').style.display = '';
   scanClienteId = null;
+
+  // Calcola qrbox in base alla dimensione reale del container
+  const containerW = document.getElementById('scanner-container').offsetWidth || 320;
+  const boxSize = Math.floor(Math.min(containerW * 0.7, 250));
+
   scanner = new Html5Qrcode('reader');
-  scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 200, height: 200 }, aspectRatio: 1.0 }, onScanSuccess, () => {})
-    .then(() => { scannerActive = true; })
+  const config = {
+    fps: 15,
+    qrbox: { width: boxSize, height: boxSize },
+    aspectRatio: 1.0,
+    disableFlip: false,
+    experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+  };
+
+  scanner.start({ facingMode: 'environment' }, config, onScanSuccess, () => {})
+    .then(() => {
+      scannerActive = true;
+      const st = document.getElementById('scan-status');
+      if (st) st.textContent = 'PUNTA IL QR CODE VERSO LA FOTOCAMERA';
+      const dbg = document.getElementById('scan-debug');
+      if (dbg) dbg.textContent = 'Scanner attivo. Clienti in cache: ' + clientiCache.length;
+    })
     .catch(() => {
-      document.getElementById('scanner-container').innerHTML = `<div style="padding:40px;text-align:center;color:var(--text2);font-size:13px;">Fotocamera non disponibile.<br>Verifica i permessi nel browser.</div>`;
+      // Fallback: prova senza vincoli fotocamera
+      scanner.start({ facingMode: 'user' }, config, onScanSuccess, () => {})
+        .then(() => { scannerActive = true; })
+        .catch(() => {
+          document.getElementById('scanner-container').innerHTML =
+            `<div style="padding:40px;text-align:center;color:var(--text2);font-size:13px;">Fotocamera non disponibile.<br>Verifica i permessi nel browser.</div>`;
+        });
     });
 }
 
@@ -801,6 +828,8 @@ function stopScanner() {
 }
 
 function onScanSuccess(decoded) {
+  const dbg = document.getElementById('scan-debug');
+  if (dbg) dbg.textContent = 'DECODED: ' + decoded + ' | CLIENTI: ' + clientiCache.length + ' | IDS: ' + clientiCache.map(c=>c.id).join(', ');
   const cliente = clientiCache.find(c => c.id === decoded);
   if (!cliente) { toast('QR non riconosciuto'); return; }
   stopScanner();
