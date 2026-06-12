@@ -393,23 +393,23 @@ async function handleAuth() {
   }
   btn.textContent = '...'; btn.disabled = true;
   let result;
-  if (authMode === 'login') result = await sb.auth.signInWithPassword({ email, password });
-  else result = await sb.auth.signUp({ email, password, options: { data: {} } });
+  if (authMode === 'login') {
+    result = await sb.auth.signInWithPassword({ email, password });
+  } else {
+    result = await sb.auth.signUp({ email, password, options: { data: {} } });
+    // Se registrazione ok, fai login automatico
+    if (!result.error) {
+      result = await sb.auth.signInWithPassword({ email, password });
+    }
+  }
   btn.disabled = false; btn.textContent = authMode === 'login' ? 'Accedi' : 'Registrati';
   if (result.error) { showAuthError(translateAuthError(result.error.message)); return; }
   let session = result.data.session;
   if (!session) { const { data } = await sb.auth.getSession(); session = data.session; }
-  if (!session) {
-    if (authMode === 'register') { showAuthSuccess('Registrazione completata! Ora accedi.'); switchAuthTab('login'); }
-    else showAuthError('Sessione non disponibile. Riprova.');
-    return;
-  }
+  if (!session) { showAuthError('Sessione non disponibile. Riprova.'); return; }
   currentUser = session.user;
-  console.log('Login OK, user:', currentUser.email);
   hideLogin();
-  console.log('hideLogin chiamato');
   await enterApp();
-  console.log('enterApp completato');
 }
 async function handleResetPassword() {
   const email = document.getElementById('auth-email').value.trim();
