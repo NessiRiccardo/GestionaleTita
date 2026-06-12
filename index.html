@@ -540,7 +540,7 @@ function renderClienti() {
       const rimaste = stats.rimaste;
       if (rimaste <= 0) badgeHtml = `<span class="badge badge-empty">Esaurito</span>`;
       else if (rimaste <= 2) badgeHtml = `<span class="badge badge-warn">${rimaste} rimast${rimaste===1?'a':'e'}</span>`;
-      else badgeHtml = `<span class="badge badge-ok">${rimaste}/${carnetAttivo.totale}</span>`;
+      else badgeHtml = `<span class="badge badge-ok">${stats.usate}/${carnetAttivo.totale}</span>`;
       const pct = Math.min(100, (stats.usate / carnetAttivo.totale) * 100);
       const color = rimaste <= 0 ? 'var(--red)' : rimaste <= 2 ? 'var(--orange)' : 'var(--green)';
       barHtml = `<div class="carnet-bar"><div class="carnet-fill" style="width:${pct}%;background:${color}"></div></div>`;
